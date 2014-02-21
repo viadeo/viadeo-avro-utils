@@ -18,6 +18,7 @@ import org.apache.avro.mapred.FsInput;
 import org.apache.avro.mapreduce.AvroJob;
 import org.apache.avro.mapreduce.AvroKeyInputFormat;
 import org.apache.avro.mapreduce.AvroKeyOutputFormat;
+import org.apache.avro.mapreduce.AvroMultipleOutputs;
 import org.apache.avro.util.Utf8;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -73,13 +74,16 @@ public class ReadTest {
     @Before
     public void setUp() throws Exception {
         Record[] records = {TestSchema.record("2", 2), TestSchema.record("3", 3)};
+        Record[] records2 = {TestSchema.record("4", 4), TestSchema.record("3", 3)};
+
         create("a", "input.avro", records);
 
-        create("b", "input2.avro", records);
+        create("b", "input2.avro", records2);
     }
 
 
-	@Test
+	@Ignore
+    @Test
 	public void testRWGenericAvro() throws Exception {
 
 		Job job = new Job();
@@ -121,31 +125,55 @@ public class ReadTest {
 
         // ~ INPUT
         FileInputFormat.setInputPaths(job, new File(tmpFolder.getRoot(), "a").getAbsolutePath()
-        + "," + new File(tmpFolder.getRoot(), "b").getAbsolutePath()
-        );
+        + "," + new File(tmpFolder.getRoot(), "b").getAbsolutePath());
         job.setInputFormatClass(AvroKeyInputFormat.class);
-        AvroJob.setInputKeySchema(job, GenerateSample.TestSchema.getSchema());
+        Schema schema = TestSchema.getSchema();
+
+
+        job.setMapperClass(ReadMapper2.class);
+        AvroJob.setInputKeySchema(job, schema);
+        AvroJob.setMapOutputKeySchema(job, schema);
+        job.setMapOutputValueClass(Text.class);
 
 
 
 
-        job.setMapperClass(ReadMapper.class);
-        AvroJob.setMapOutputKeySchema(job, GenerateSample.TestSchema.getSchema());
-        //job.setMapOutputValueClass(NullWritable.class);
-        job.setMapOutputValueClass(IntWritable.class);
+        /*
+
+         job.setReducerClass(GenericStatsReducer.class);
+         AvroJob.setOutputKeySchema(job, STATS_SCHEMA);
+         AvroMultipleOutputs.addNamedOutput(job,"myavro",AvroKeyOutputFormat.class,STATS_SCHEMA,null);
+         AvroMultipleOutputs.addNamedOutput(job,"myavro1", AvroKeyOutputFormat.class, STATS_SCHEMA_2);
+         job.setOutputFormatClass(AvroKeyOutputFormat.class);
+        String dir = System.getProperty("test.dir", ".") + "/mapred";
+        Path outputPath = new Path(dir + "/out");
+        outputPath.getFileSystem(job.getConfiguration()).delete(outputPath);
+    F   ileOutputFormat.setOutputPath(job, outputPath);
+
+         */
+
+
+
+        job.setReducerClass(ReadReducer2.class);
+        AvroJob.setOutputKeySchema(job, schema);
+
+        job.setOutputValueClass(Text.class);
+        job.setOutputFormatClass(AvroKeyOutputFormat.class);
+
 
         // ~ OUTPUT
-        Path outputPath = new Path(tmpFolder.getRoot().getPath() + "/out-generic");
-
-
+        Path outputPath = new Path(tmpFolder.getRoot().getPath() + "/out-generic2");
         FileOutputFormat.setOutputPath(job, outputPath);
-        job.setReducerClass(ReadReducer.class);
-        job.setOutputValueClass(IntWritable.class);
-        job.setOutputFormatClass(AvroKeyOutputFormat.class);
-        AvroJob.setOutputKeySchema(job, GenerateSample.TestSchema.getSchema());
+        AvroMultipleOutputs.addNamedOutput(job,"only", AvroKeyOutputFormat.class,schema, null) ;
+        //AvroMultipleOutputs.addNamedOutput(job,"onlyb", AvroKeyOutputFormat.class,schema);
+
+
+
 
         Assert.assertTrue(job.waitForCompletion(true));
 
+
+        Thread.sleep(100000000000L);
 
 
     }

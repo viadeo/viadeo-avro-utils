@@ -1,6 +1,5 @@
 package com.viadeo.avrodiff;
 
-import java.io.IOException;
 
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.mapred.AvroKey;
@@ -12,14 +11,16 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 
-public class ReadMapper extends Mapper<AvroKey<GenericRecord>, NullWritable, AvroKey<GenericRecord>, IntWritable> {
+import java.io.IOException;
+
+public class ReadMapper2 extends Mapper<AvroKey<GenericRecord>, NullWritable, AvroKey<GenericRecord>, Text> {
 
     public static Text fileName;
 
-	@Override
-	public void map(AvroKey<GenericRecord> key, NullWritable value, Context context) throws IOException, InterruptedException {
-		context.write(key, new IntWritable(1));
-	}
+    @Override
+    public void map(AvroKey<GenericRecord> key, NullWritable value, Context context) throws IOException, InterruptedException {
+        context.write(key, fileName);
+    }
 
     @Override
     protected void setup(Context context) throws IOException,
@@ -27,10 +28,9 @@ public class ReadMapper extends Mapper<AvroKey<GenericRecord>, NullWritable, Avr
 
         Log log = LogFactory.getLog(ReadMapper.class);
 
-        String name = ((FileSplit) context.getInputSplit()).getPath().getName();
+        String name = ((FileSplit) context.getInputSplit()).getPath().getParent().getName();
         fileName = new Text(name);
         log.info("------------------------------------------------------" + fileName);
 
-        //context.write(new Text("a"), fileName);
     }
 }
