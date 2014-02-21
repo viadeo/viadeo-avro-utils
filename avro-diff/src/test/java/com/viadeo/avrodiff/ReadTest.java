@@ -41,35 +41,43 @@ import com.viadeo.avrodiff.GenerateSample.TestSchema;
 
 public class ReadTest {
 
-	@Rule
-	public TemporaryFolder tmpFolderInput = new TemporaryFolder();
+
+
+	//@Rule
+	//public TemporaryFolder tmpFolderInput = new TemporaryFolder();
 
 	@Rule
 	public TemporaryFolder tmpFolder = new TemporaryFolder();
-	public static final Schema STATS_SCHEMA =
-			Schema.parse("{\"name\":\"stats\",\"type\":\"record\","
-					+ "\"fields\":[{\"name\":\"count\",\"type\":\"int\"},"
-					+ "{\"name\":\"name\",\"type\":\"string\"}]}");
+
+    public void create(String dirname, String filename, Record[] records) throws  Exception {
 
 
-	@Before
-	public void setUp() throws IOException {
         Schema schema = TestSchema.getSchema();
 
-        File file = new File(tmpFolderInput.getRoot(),"input.avro");
+        File dir = new File(tmpFolder.getRoot(), dirname);
 
+        if(!dir.exists() ){
+            dir.mkdirs();
+        }
+
+        File file = new File(dir,filename);
         DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<GenericRecord>(schema);
         DataFileWriter<GenericRecord> dataFileWriter = new DataFileWriter<GenericRecord>(datumWriter);
         dataFileWriter.create(schema, file);
-        TestSchema.append(dataFileWriter, new Record[]{TestSchema.record("2",2), TestSchema.record("3",3)});
+        TestSchema.append(dataFileWriter,records);
         dataFileWriter.close();
-	}
 
-	@After
-	public void cleanUp(){
-		File file = new File(tmpFolderInput.getRoot(), "input.avro");
-		file.delete();
-	}
+    }
+
+
+    @Before
+    public void setUp() throws Exception {
+        Record[] records = {TestSchema.record("2", 2), TestSchema.record("3", 3)};
+        create("a", "input.avro", records);
+
+        create("b", "input2.avro", records);
+    }
+
 
 	@Test
 	public void testRWGenericAvro() throws Exception {
@@ -77,9 +85,12 @@ public class ReadTest {
 		Job job = new Job();
 
 		// ~ INPUT
-		FileInputFormat.setInputPaths(job, new File(tmpFolderInput.getRoot(), "input.avro").getAbsolutePath());
+		FileInputFormat.setInputPaths(job, new File(tmpFolder.getRoot(), "a/").getAbsolutePath());
 		job.setInputFormatClass(AvroKeyInputFormat.class);
 		AvroJob.setInputKeySchema(job, GenerateSample.TestSchema.getSchema());
+
+
+
 
 		job.setMapperClass(ReadMapper.class);
 		AvroJob.setMapOutputKeySchema(job, GenerateSample.TestSchema.getSchema());
@@ -88,6 +99,8 @@ public class ReadTest {
 
 		// ~ OUTPUT
 		Path outputPath = new Path(tmpFolder.getRoot().getPath() + "/out-generic");
+
+
 		FileOutputFormat.setOutputPath(job, outputPath);
 		job.setReducerClass(ReadReducer.class);
 		job.setOutputValueClass(IntWritable.class);
@@ -95,5 +108,45 @@ public class ReadTest {
 		AvroJob.setOutputKeySchema(job, GenerateSample.TestSchema.getSchema());
 
 		Assert.assertTrue(job.waitForCompletion(true));
+
+
+        //Thread.sleep(10000000000000000L);
 	}
+
+
+    @Test
+    public void testMultipleInputAvro() throws Exception {
+
+        Job job = new Job();
+
+        // ~ INPUT
+        FileInputFormat.setInputPaths(job, new File(tmpFolder.getRoot(), "a").getAbsolutePath()
+        + "," + new File(tmpFolder.getRoot(), "b").getAbsolutePath()
+        );
+        job.setInputFormatClass(AvroKeyInputFormat.class);
+        AvroJob.setInputKeySchema(job, GenerateSample.TestSchema.getSchema());
+
+
+
+
+        job.setMapperClass(ReadMapper.class);
+        AvroJob.setMapOutputKeySchema(job, GenerateSample.TestSchema.getSchema());
+        //job.setMapOutputValueClass(NullWritable.class);
+        job.setMapOutputValueClass(IntWritable.class);
+
+        // ~ OUTPUT
+        Path outputPath = new Path(tmpFolder.getRoot().getPath() + "/out-generic");
+
+
+        FileOutputFormat.setOutputPath(job, outputPath);
+        job.setReducerClass(ReadReducer.class);
+        job.setOutputValueClass(IntWritable.class);
+        job.setOutputFormatClass(AvroKeyOutputFormat.class);
+        AvroJob.setOutputKeySchema(job, GenerateSample.TestSchema.getSchema());
+
+        Assert.assertTrue(job.waitForCompletion(true));
+
+
+
+    }
 }
