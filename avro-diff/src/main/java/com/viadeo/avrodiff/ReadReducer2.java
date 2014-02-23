@@ -15,7 +15,6 @@ import java.io.IOException;
 public class ReadReducer2 extends Reducer<AvroKey<GenericData.Record>, Text, AvroKey<GenericData.Record>, NullWritable> {
 
     private AvroMultipleOutputs amos;
-    private AvroKey<GenericData.Record> res;
 
 
     Log log = LogFactory.getLog(ReadMapper.class);
@@ -24,7 +23,6 @@ public class ReadReducer2 extends Reducer<AvroKey<GenericData.Record>, Text, Avr
     @Override
     protected void setup(Context context) {
         amos = new AvroMultipleOutputs(context);
-        res = new AvroKey<GenericData.Record>(null);
     }
 
     @Override
@@ -33,7 +31,7 @@ public class ReadReducer2 extends Reducer<AvroKey<GenericData.Record>, Text, Avr
 
         int count = 0;
 
-        context.write(record, NullWritable.get());
+        //context.write(record, NullWritable.get());
 
         for (Text filename : counts) {
             count = count + 1;
@@ -43,10 +41,16 @@ public class ReadReducer2 extends Reducer<AvroKey<GenericData.Record>, Text, Avr
 
 
         log.info("-------" + record + file + count);
-        //amos.write("only" , record);
 
-        //res.datum(record.datum());
-        amos.write(res, NullWritable.get(),  "only");
+        if(count == 1) {
+            amos.write("only" + file , record, NullWritable.get());
+        }
+    }
+
+    @Override
+    protected void cleanup(Context context) throws IOException,InterruptedException
+    {
+        amos.close();
     }
 
 }

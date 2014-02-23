@@ -138,20 +138,6 @@ public class ReadTest {
 
 
 
-        /*
-
-         job.setReducerClass(GenericStatsReducer.class);
-         AvroJob.setOutputKeySchema(job, STATS_SCHEMA);
-         AvroMultipleOutputs.addNamedOutput(job,"myavro",AvroKeyOutputFormat.class,STATS_SCHEMA,null);
-         AvroMultipleOutputs.addNamedOutput(job,"myavro1", AvroKeyOutputFormat.class, STATS_SCHEMA_2);
-         job.setOutputFormatClass(AvroKeyOutputFormat.class);
-        String dir = System.getProperty("test.dir", ".") + "/mapred";
-        Path outputPath = new Path(dir + "/out");
-        outputPath.getFileSystem(job.getConfiguration()).delete(outputPath);
-    F   ileOutputFormat.setOutputPath(job, outputPath);
-
-         */
-
 
 
         job.setReducerClass(ReadReducer2.class);
@@ -164,11 +150,11 @@ public class ReadTest {
         // ~ OUTPUT
         Path outputPath = new Path(tmpFolder.getRoot().getPath() + "/out-generic2");
         FileOutputFormat.setOutputPath(job, outputPath);
-        AvroMultipleOutputs.addNamedOutput(job,"only", AvroKeyOutputFormat.class,schema, null) ;
-        //AvroMultipleOutputs.addNamedOutput(job,"onlyb", AvroKeyOutputFormat.class,schema);
+        AvroMultipleOutputs.addNamedOutput(job,"onlya", AvroKeyOutputFormat.class,schema) ;
+        AvroMultipleOutputs.addNamedOutput(job,"onlyb", AvroKeyOutputFormat.class, schema);
 
 
-
+        System.out.println("------" + tmpFolder.getRoot().getPath());
 
         Assert.assertTrue(job.waitForCompletion(true));
 
