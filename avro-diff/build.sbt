@@ -11,9 +11,8 @@ Seq(
   "org.apache.avro" % "avro" %  v ,
   "org.apache.avro" % "avro-mapred" %  v ,
   "org.apache.avro" % "avro-ipc" % v ,
-  "org.apache.avro" % "avro-tools" % v,
   "org.apache.hadoop" % "hadoop-client" % "2.0.0-cdh4.1.2",
-  "org.apache.hadoop" % "hadoop-mapreduce-client-common" % "test",
+  "org.apache.hadoop" % "hadoop-mapreduce-client-common" % "2.0.0-cdh4.1.2" % "test",
   "commons-httpclient" % "commons-httpclient" % "3.1" % "test"
 )}
 
