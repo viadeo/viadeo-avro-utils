@@ -20,6 +20,7 @@ import org.apache.avro.mapreduce.AvroKeyInputFormat;
 import org.apache.avro.mapreduce.AvroKeyOutputFormat;
 import org.apache.avro.mapreduce.AvroMultipleOutputs;
 import org.apache.avro.util.Utf8;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -86,7 +87,11 @@ public class ReadTest {
     @Test
 	public void testRWGenericAvro() throws Exception {
 
-		Job job = new Job();
+
+        Configuration jobConf = new Configuration();
+		Job job = new Job(jobConf);
+
+
 
 		// ~ INPUT
 		FileInputFormat.setInputPaths(job, new File(tmpFolder.getRoot(), "a/").getAbsolutePath());
@@ -95,10 +100,8 @@ public class ReadTest {
 
 
 
-
 		job.setMapperClass(ReadMapper.class);
 		AvroJob.setMapOutputKeySchema(job, GenerateSample.TestSchema.getSchema());
-		//job.setMapOutputValueClass(NullWritable.class);
 		job.setMapOutputValueClass(IntWritable.class);
 
 		// ~ OUTPUT
@@ -121,11 +124,25 @@ public class ReadTest {
     @Test
     public void testMultipleInputAvro() throws Exception {
 
-        Job job = new Job();
+
+        Configuration jobConf = new Configuration();
+
+
+
+        Job job = new Job(jobConf);
+
+
+        String diffin =  new File(tmpFolder.getRoot(), "a").getAbsolutePath();
+        String diffout =  new File(tmpFolder.getRoot(), "b").getAbsolutePath();
+
+
+        jobConf.set("viadeo.diff.diffinpath", diffin );
+        jobConf.set("viadeo.diff.diffoutpath", diffout );
+
 
         // ~ INPUT
-        FileInputFormat.setInputPaths(job, new File(tmpFolder.getRoot(), "a").getAbsolutePath()
-        + "," + new File(tmpFolder.getRoot(), "b").getAbsolutePath());
+        FileInputFormat.setInputPaths(job, String.format("%s,%s", diffin, diffout));
+
         job.setInputFormatClass(AvroKeyInputFormat.class);
         Schema schema = TestSchema.getSchema();
 
@@ -134,11 +151,6 @@ public class ReadTest {
         AvroJob.setInputKeySchema(job, schema);
         AvroJob.setMapOutputKeySchema(job, schema);
         job.setMapOutputValueClass(Text.class);
-
-
-
-
-
 
         job.setReducerClass(ReadReducer2.class);
         AvroJob.setOutputKeySchema(job, schema);
@@ -150,8 +162,10 @@ public class ReadTest {
         // ~ OUTPUT
         Path outputPath = new Path(tmpFolder.getRoot().getPath() + "/out-generic2");
         FileOutputFormat.setOutputPath(job, outputPath);
-        AvroMultipleOutputs.addNamedOutput(job,"onlya", AvroKeyOutputFormat.class,schema) ;
-        AvroMultipleOutputs.addNamedOutput(job,"onlyb", AvroKeyOutputFormat.class, schema);
+        AvroMultipleOutputs.addNamedOutput(job, "kernel", AvroKeyOutputFormat.class, schema);
+        AvroMultipleOutputs.addNamedOutput(job,"add"   , AvroKeyOutputFormat.class, schema);
+        AvroMultipleOutputs.addNamedOutput(job,"del"   , AvroKeyOutputFormat.class, schema);
+
 
 
         System.out.println("------" + tmpFolder.getRoot().getPath());

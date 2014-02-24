@@ -16,35 +16,30 @@ public class ReadReducer2 extends Reducer<AvroKey<GenericData.Record>, Text, Avr
 
     private AvroMultipleOutputs amos;
 
-
-    Log log = LogFactory.getLog(ReadMapper.class);
-
-
     @Override
     protected void setup(Context context) {
         amos = new AvroMultipleOutputs(context);
     }
 
     @Override
-    protected void reduce(AvroKey<GenericData.Record> record, Iterable<Text> counts, Context context) throws IOException, InterruptedException {
-        String file = "";
+    protected void reduce(AvroKey<GenericData.Record> record, Iterable<Text> sides, Context context) throws IOException, InterruptedException {
+        String side = "";
 
         int count = 0;
 
-        //context.write(record, NullWritable.get());
-
-        for (Text filename : counts) {
+        for (Text filename : sides) {
             count = count + 1;
-            file = filename.toString();
+            side = filename.toString();
         }
 
-
-
-        log.info("-------" + record + file + count);
+        if(count == 2) {
+            amos.write("kernel", record, NullWritable.get(), "type=kernel/part");
+        }
 
         if(count == 1) {
-            amos.write("only" + file , record, NullWritable.get());
+            amos.write(side , record, NullWritable.get(), "type=" + side + "/part");
         }
+
     }
 
     @Override

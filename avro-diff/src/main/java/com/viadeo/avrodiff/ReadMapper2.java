@@ -20,16 +20,40 @@ public class ReadMapper2 extends Mapper<AvroKey<GenericRecord>, NullWritable, Av
     @Override
     public void map(AvroKey<GenericRecord> key, NullWritable value, Context context) throws IOException, InterruptedException {
         context.write(key, fileName);
+
+
+
     }
 
     @Override
     protected void setup(Context context) throws IOException,
             InterruptedException {
 
-        Log log = LogFactory.getLog(ReadMapper.class);
 
-        String name = ((FileSplit) context.getInputSplit()).getPath().getParent().getName();
-        fileName = new Text(name);
+
+        Log log = LogFactory.getLog(ReadMapper2.class);
+
+        String name = ((FileSplit) context.getInputSplit()).getPath().getParent().toString();
+
+        log.info("--------------------name" + name);
+
+                  // jobConf.set("viadeo.diff.diffinpath", diffin );
+        //jobConf.set("viadeo.diff.diffoutpath", diffout );
+
+        String diffin = context.getConfiguration().get("viadeo.diff.diffinpath");
+        String diffout = context.getConfiguration().get("viadeo.diff.diffoutpath");
+
+
+
+        String res;
+        // TODO : get from context
+        if(name.equals(diffin)) {
+            res = "del";
+        }               else {
+            res = "add";
+        }
+
+        fileName = new Text(res);
         log.info("------------------------------------------------------" + fileName);
 
     }
