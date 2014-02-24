@@ -13,7 +13,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 
 import java.io.IOException;
 
-public class ReadMapper2 extends Mapper<AvroKey<GenericRecord>, NullWritable, AvroKey<GenericRecord>, Text> {
+public class DiffMapper extends Mapper<AvroKey<GenericRecord>, NullWritable, AvroKey<GenericRecord>, Text> {
 
     public static Text fileName;
 
@@ -31,11 +31,11 @@ public class ReadMapper2 extends Mapper<AvroKey<GenericRecord>, NullWritable, Av
 
 
 
-        Log log = LogFactory.getLog(ReadMapper2.class);
+        Log log = LogFactory.getLog(DiffMapper.class);
 
-        String name = ((FileSplit) context.getInputSplit()).getPath().getParent().toString();
+        String name = ((FileSplit) context.getInputSplit()).getPath().getParent().toString() + "/";
 
-        log.info("--------------------name" + name);
+        log.info("--------------------name: " + name);
 
                   // jobConf.set("viadeo.diff.diffinpath", diffin );
         //jobConf.set("viadeo.diff.diffoutpath", diffout );
@@ -43,6 +43,8 @@ public class ReadMapper2 extends Mapper<AvroKey<GenericRecord>, NullWritable, Av
         String diffin = context.getConfiguration().get("viadeo.diff.diffinpath");
         String diffout = context.getConfiguration().get("viadeo.diff.diffoutpath");
 
+        log.info("--------------------------------------------------------------------diffin: " + diffin);
+        log.info("--------------------------------------------------------------------diffout: " + diffout);
 
 
         String res;
