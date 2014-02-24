@@ -23,3 +23,4 @@ testOptions += Tests.Argument(TestFrameworks.JUnit, "-q", "-v")
 crossPaths := false
 
 javacOptions ++= Seq("-source", "1.6")
+
