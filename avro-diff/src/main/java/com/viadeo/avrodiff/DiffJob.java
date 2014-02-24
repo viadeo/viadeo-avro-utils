@@ -1,5 +1,7 @@
 package com.viadeo.avrodiff;
 
+import java.io.IOException;
+
 import org.apache.avro.Schema;
 import org.apache.avro.file.DataFileReader;
 import org.apache.avro.generic.GenericDatumReader;
@@ -18,6 +20,7 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
 
 public class DiffJob extends Configured implements Tool {
 
@@ -32,10 +35,14 @@ public class DiffJob extends Configured implements Tool {
 
 	public Job internalRun(Path origInput, Path destInput, Path outputDir, Configuration conf) throws Exception {
 
+		conf.set("viadeo.diff.diffinpath", origInput.toString() );
+		conf.set("viadeo.diff.diffoutpath", destInput.toString() );
+		conf.setBoolean("mapred.output.compress", true);
+
 
 		Job job = new Job(conf);
 	    job.setJarByClass(DiffJob.class);
-	    job.setJobName("read");
+	    job.setJobName("diff");
 
 
 		FileSystem fileSystem = FileSystem.get(job.getConfiguration());
@@ -74,6 +81,8 @@ public class DiffJob extends Configured implements Tool {
 		AvroMultipleOutputs.addNamedOutput(job,"add"   , AvroKeyOutputFormat.class, schema);
 		AvroMultipleOutputs.addNamedOutput(job,"del"   , AvroKeyOutputFormat.class, schema);
 
+		AvroMultipleOutputs.setCountersEnabled(job, true);
+
 		return job;
 	}
 	@Override
@@ -89,10 +98,20 @@ public class DiffJob extends Configured implements Tool {
 	    Path destPath = new Path(args[1]);
 	    Path outPath = new Path(args[2]);
 
-	    internalRun(origPath, destPath, outPath, jobConf);
+	    Job job = internalRun(origPath, destPath, outPath, jobConf);
+	    boolean b = job.waitForCompletion(true);
+	    if (!b) {
+	    	throw new IOException("error with job!");
+	    }
 
-
-		return 0;
+	    return 0;
 	}
+
+    public static void main(String[] args) throws Exception {
+
+        int res = ToolRunner.run(new Configuration(), new DiffJob(), args);
+        System.exit(res);
+    }
+
 
 }

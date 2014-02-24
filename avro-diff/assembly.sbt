@@ -35,3 +35,7 @@ excludedJars in assembly <<= (fullClasspath in assembly) map { cp =>
     ).contains(c.data.getName)
   }
 }
+
+test in assembly := {}
+
+//mainClass in assembly := Some("com.example.Main")
