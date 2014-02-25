@@ -4,6 +4,9 @@
 # except for .gitignore
 !.gitignore
 
+# ignore test output dir 
+mapred
+
 # ignore eclipse's bin directories
 **/bin
 db

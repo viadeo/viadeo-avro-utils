@@ -69,6 +69,6 @@ public class DiffTest {
         Assert.assertTrue(job.internalRun(diffin, diffout, output, jobConf).waitForCompletion(true));
 
         System.out.println("----------------------------" + outStr);
-        Thread.sleep(100000000000L);
+        //Thread.sleep(100000000000L);
 	}
 }
