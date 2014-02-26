@@ -4,9 +4,9 @@
     <groupId>default</groupId>
     <artifactId>avro-compact</artifactId>
     <packaging>jar</packaging>
-    <description>avro-diff</description>
+    <description>avro-compact</description>
     <version>1.0</version>
-    <name>avro-diff</name>
+    <name>avro-compact</name>
     <organization>
         <name>default</name>
     </organization>
