@@ -1,0 +1,3 @@
+
+hadoop jar avro-diff-assembly-1.0.jar com.viadeo.avrodiff.DiffJob -D mapred.compress.map.output=true /bi/sqoop/fromschema=viaduc/fromtable=PaymentTransaction/importdatetime=2014-02-09T01_36_39p01_00/fromserver=sqoop-sql-1 /bi/sqoop/fromschema=viaduc/fromtable=PaymentTransaction/importdatetime=2014-02-24T01_38_46p01_00/fromserver=sqoop-sql-1 /user/jbille/diffPaymentTransaction
+

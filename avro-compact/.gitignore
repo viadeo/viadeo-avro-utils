@@ -1,0 +1,26 @@
+# Extracted from https://github.com/ulrich/macaron-factory/blob/master/.gitignore                                                                                                                                    
+# Ignore all dotfiles...
+.*
+# except for .gitignore
+!.gitignore
+
+# ignore test output dir 
+mapred
+
+# ignore eclipse's bin directories
+**/bin
+db
+eclipse
+project/project
+project/target
+target
+tmp
+test-result
+server.pid
+*.iml
+*.eml
+*.sublime-workspace
+*.sublime-project
+*.pyc
+**/advertBAT/templates
+
