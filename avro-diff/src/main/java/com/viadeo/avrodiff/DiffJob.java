@@ -1,5 +1,6 @@
 package com.viadeo.avrodiff;
 
+import java.io.File;
 import java.io.IOException;
 
 import org.apache.avro.Schema;
@@ -49,12 +50,18 @@ public class DiffJob extends Configured implements Tool {
 		FileStatus[] inputFiles = fileSystem.globStatus(destInput.suffix("/*.avro"));
 
 
-
 		if(inputFiles.length == 0){
 			throw new Exception("At least one input is needed");
 		}
 
-		Schema schema = getSchema(inputFiles[0]);
+		String schemaPath = conf.get("viadeo.avro.schema");
+		Schema schema;
+		if(schemaPath == null)
+			schema = getSchema(inputFiles[0]);
+		else{
+			Schema.Parser parser = new Schema.Parser();
+			schema = parser.parse(new File(schemaPath));
+		}
 		//conf.set("avro.schema", schema);
 
 
