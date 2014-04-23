@@ -4,11 +4,9 @@ package com.viadeo.avrondiff;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.mapred.AvroKey;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 
@@ -18,7 +16,6 @@ public class DiffNMapper extends Mapper<AvroKey<GenericRecord>, NullWritable, Av
 
 
     public static IntWritable indexFile;
-    public static Text fileName;
 
     @Override
     public void map(AvroKey<GenericRecord> key, NullWritable value, Context context) throws IOException, InterruptedException {
@@ -29,20 +26,9 @@ public class DiffNMapper extends Mapper<AvroKey<GenericRecord>, NullWritable, Av
     protected void setup(Context context) throws IOException,
             InterruptedException {
 
-
-
-        Log log = LogFactory.getLog(DiffNMapper.class);
-
         String name = ((FileSplit) context.getInputSplit()).getPath().getParent().toString() + "/";
 
-        log.info("--------------------name: " + name);
-
-                  // jobConf.set("viadeo.diff.diffinpath", diffin );
-        //jobConf.set("viadeo.diff.diffoutpath", diffout );
-
         String[] diffins = context.getConfiguration().get(DiffNJob.DIFFPATHS).split(",");
-
-
 
 
         int minleven = computeLevenshteinDistance(name,diffins[0]);
@@ -58,7 +44,6 @@ public class DiffNMapper extends Mapper<AvroKey<GenericRecord>, NullWritable, Av
 
         indexFile = new IntWritable(indexleven);
 
-        log.info("------------------------------------------------------" + fileName);
 
     }
 

@@ -23,7 +23,10 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.BinaryNode;
+import org.codehaus.jackson.node.JsonNodeFactory;
 
 public class DiffNJob extends Configured implements Tool {
 
@@ -33,6 +36,12 @@ public class DiffNJob extends Configured implements Tool {
 
 
     public static Schema addByteMask(Schema schema)  {
+
+        return  addByteMask(schema, new String[]{});
+
+    }
+
+    public static Schema addByteMask(Schema schema, String[] dirs)  {
         Schema outSchema;
 
 
@@ -42,6 +51,15 @@ public class DiffNJob extends Configured implements Tool {
         List<Schema.Field> fields = new ArrayList<Schema.Field>();
         for(Schema.Field f:schema.getFields())      {
             fields.add(new Schema.Field(f.name(),f.schema(),f.doc(),f.defaultValue()));
+
+        }
+
+        if(dirs.length > 0 ) {
+           ArrayNode array= JsonNodeFactory.instance.arrayNode();
+           for(String dir:dirs) {
+               array.add(dir);
+           }
+           bf.addProp("diffdirs", array);
 
         }
         fields.add(bf);
@@ -75,7 +93,8 @@ public class DiffNJob extends Configured implements Tool {
 
         FileSystem fileSystem = FileSystem.get(job.getConfiguration());
 
-		FileStatus[] inputFiles = fileSystem.globStatus(new Path(inputDirs.split(",")[0]).suffix("/*.avro"));
+        String[] dirs = inputDirs.split(",");
+        FileStatus[] inputFiles = fileSystem.globStatus(new Path(dirs[0]).suffix("/*.avro"));
 
 
 		if(inputFiles.length == 0){
@@ -93,7 +112,8 @@ public class DiffNJob extends Configured implements Tool {
         }
 
 
-        Schema outSchema = addByteMask(schema) ;
+        Schema outSchema = addByteMask(schema, dirs) ;
+        System.out.println(outSchema);
 
 
         FileInputFormat.setInputPaths(job, inputDirs);
