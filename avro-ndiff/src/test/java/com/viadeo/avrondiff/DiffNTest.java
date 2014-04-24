@@ -117,7 +117,6 @@ public class DiffNTest {
         String base = outStr + "/";
 
 
-
         assertContainsOnly(base, "11", TestSchema.recordWithMask("3", 3));
         assertContainsOnly(base, "01", TestSchema.recordWithMask("4", 4));
         assertContainsOnly(base, "10", TestSchema.recordWithMask("2", 2));
