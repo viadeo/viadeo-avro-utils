@@ -22,6 +22,9 @@ public class AvroUtilsJob extends Configured implements Tool {
         String[] remainingArgs = Arrays.copyOfRange(strings, 1, strings.length);
 
         String toolName = strings[0];
+
+        System.out.println("starting " + toolName + " Job");
+
         if(toolName.equals("compact")) {
             return ToolRunner.run(getConf(),new CompactJob(), remainingArgs);
         } else if (toolName.equals("diff")) {

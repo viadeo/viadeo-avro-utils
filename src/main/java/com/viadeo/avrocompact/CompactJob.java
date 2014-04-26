@@ -58,15 +58,20 @@ public class CompactJob extends Configured implements Tool {
 
 
         FileInputFormat.setInputPaths(job, inputDir);
-        job.setInputFormatClass(AvroKeyInputFormat.class);
 
         job.setMapperClass(Mapper.class);
+        // MAPPER INPUT SPEC
+        job.setInputFormatClass(AvroKeyInputFormat.class);
         AvroJob.setInputKeySchema(job, schema);
+
+        // MAPPER OUTPUT SPEC + REDUCER INPUT SPEC
         AvroJob.setMapOutputKeySchema(job, schema);
         job.setMapOutputValueClass(NullWritable.class);
-        job.setReducerClass(Reducer.class);
-        AvroJob.setOutputKeySchema(job, schema);
 
+
+        job.setReducerClass(Reducer.class);
+        // REDUCER OUTPUT SPEC
+        AvroJob.setOutputKeySchema(job, schema);
         job.setOutputValueClass(NullWritable.class);
         job.setOutputFormatClass(AvroKeyOutputFormat.class);
 

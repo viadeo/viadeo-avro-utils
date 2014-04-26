@@ -72,7 +72,7 @@ public class ExtractJob extends Configured implements Tool {
         FileInputFormat.setInputPaths(job, inputdir);
         job.setInputFormatClass(AvroKeyInputFormat.class);
 
-        job.setMapperClass(DiffNMapper.class);
+        job.setMapperClass(ExtractMapper.class);
         AvroJob.setInputKeySchema(job, schema);
         AvroJob.setMapOutputKeySchema(job, outSchema);
 
