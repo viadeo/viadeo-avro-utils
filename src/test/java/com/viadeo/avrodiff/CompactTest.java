@@ -2,6 +2,7 @@ package com.viadeo.avrodiff;
 
 import java.io.File;
 
+import com.viadeo.AvroUtilTest;
 import com.viadeo.avrocompact.CompactJob;
 import org.apache.avro.Schema;
 import org.apache.avro.file.DataFileReader;
@@ -20,9 +21,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import com.viadeo.avrodiff.GenerateSample.TestSchema;
 
-public class CompactTest {
+public class CompactTest  extends AvroUtilTest {
 
 	@Rule
 	public TemporaryFolder tmpFolder = new TemporaryFolder();

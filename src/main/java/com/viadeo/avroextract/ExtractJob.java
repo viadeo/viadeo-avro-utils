@@ -2,9 +2,6 @@ package com.viadeo.avroextract;
 
 import com.viadeo.SchemaUtils;
 import com.viadeo.StringUtils;
-import com.viadeo.avrondiff.DiffNJob;
-import com.viadeo.avrondiff.DiffNMapper;
-import com.viadeo.avrondiff.DiffNReducer;
 import org.apache.avro.Schema;
 import org.apache.avro.mapreduce.AvroJob;
 import org.apache.avro.mapreduce.AvroKeyInputFormat;
@@ -14,7 +11,6 @@ import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -45,15 +41,15 @@ public class ExtractJob extends Configured implements Tool {
         FileStatus[] inputFiles = fileSystem.globStatus(inputdir.suffix("/*.avro"));
 
 
-        if(inputFiles.length == 0){
+        if (inputFiles.length == 0) {
             throw new Exception("At least one input is needed");
         }
 
         String schemaPath = conf.get("viadeo.avro.schema");
         Schema schema;
-        if(schemaPath == null)
+        if (schemaPath == null)
             schema = SchemaUtils.getSchema(inputFiles[0]);
-        else{
+        else {
             Schema.Parser parser = new Schema.Parser();
             schema = parser.parse(new File(schemaPath));
         }
@@ -61,8 +57,7 @@ public class ExtractJob extends Configured implements Tool {
 
         String prop = schema.getField(SchemaUtils.DIFFBYTEMASK).getProp(SchemaUtils.DIFFDIRSPROPNAME);
 
-        conf.set(DIFFINDEX, "" + StringUtils.indexOfClosestElement(origdir,prop.split(",")));
-
+        conf.set(DIFFINDEX, "" + StringUtils.indexOfClosestElement(origdir, prop.split(",")));
 
 
         Schema outSchema = SchemaUtils.removeField(schema, SchemaUtils.DIFFBYTEMASK);
@@ -83,7 +78,6 @@ public class ExtractJob extends Configured implements Tool {
 
         job.setOutputValueClass(NullWritable.class);
         job.setOutputFormatClass(AvroKeyOutputFormat.class);
-
 
 
         // ~ OUTPUT

@@ -25,14 +25,14 @@ public class AvroUtilsJob extends Configured implements Tool {
 
         System.out.println("starting " + toolName + " Job");
 
-        if(toolName.equals("compact")) {
-            return ToolRunner.run(getConf(),new CompactJob(), remainingArgs);
+        if (toolName.equals("compact")) {
+            return ToolRunner.run(getConf(), new CompactJob(), remainingArgs);
         } else if (toolName.equals("diff")) {
-            return ToolRunner.run(getConf(),new DiffJob(), remainingArgs);
+            return ToolRunner.run(getConf(), new DiffJob(), remainingArgs);
         } else if (toolName.equals("diffn")) {
-            return ToolRunner.run(getConf(),new DiffNJob(), remainingArgs);
-        } else  if(toolName.equals("extract")) {
-            return ToolRunner.run(getConf(),new ExtractJob(), remainingArgs);
+            return ToolRunner.run(getConf(), new DiffNJob(), remainingArgs);
+        } else if (toolName.equals("extract")) {
+            return ToolRunner.run(getConf(), new ExtractJob(), remainingArgs);
         }
 
         return 0;

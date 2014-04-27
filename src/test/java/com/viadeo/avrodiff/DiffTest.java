@@ -2,6 +2,7 @@ package com.viadeo.avrodiff;
 
 import java.io.File;
 
+import com.viadeo.AvroUtilTest;
 import org.apache.avro.Schema;
 import org.apache.avro.file.DataFileReader;
 import org.apache.avro.file.DataFileWriter;
@@ -19,9 +20,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import com.viadeo.avrodiff.GenerateSample.TestSchema;
-
-public class DiffTest {
+public class DiffTest extends AvroUtilTest  {
 
 	@Rule
 	public TemporaryFolder tmpFolder = new TemporaryFolder();

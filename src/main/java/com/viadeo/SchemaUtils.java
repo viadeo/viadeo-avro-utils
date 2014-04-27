@@ -28,10 +28,9 @@ public class SchemaUtils {
         outSchema = Schema.createRecord(schema.getName(), schema.getDoc(), schema.getNamespace(), schema.isError());
 
         List<Schema.Field> fields = new ArrayList<Schema.Field>();
-        for(Schema.Field f:schema.getFields())
-        {
-            if(!f.name().equals(fieldname)) {
-            fields.add(new Schema.Field(f.name(),f.schema(),f.doc(),f.defaultValue()));
+        for (Schema.Field f : schema.getFields()) {
+            if (!f.name().equals(fieldname)) {
+                fields.add(new Schema.Field(f.name(), f.schema(), f.doc(), f.defaultValue()));
             }
         }
         outSchema.setFields(fields);
@@ -39,7 +38,7 @@ public class SchemaUtils {
     }
 
 
-    public static Schema getSchema(FileStatus fileStatus ) throws Exception {
+    public static Schema getSchema(FileStatus fileStatus) throws Exception {
         FsInput input = new FsInput(fileStatus.getPath(), new Configuration());
         DataFileReader<Void> reader = new DataFileReader<Void>(input, new GenericDatumReader<Void>());
         Schema schema = reader.getSchema();
@@ -71,7 +70,7 @@ public class SchemaUtils {
 
             }
 
-            final String fieldSchema = String.format("{\"name\":\"%s\", \"type\":\"bytes\",\"default\":\"0\",\"%s\": \"%s\"}" , DIFFBYTEMASK,  DIFFDIRSPROPNAME, dirString);
+            final String fieldSchema = String.format("{\"name\":\"%s\", \"type\":\"bytes\",\"default\":\"0\",\"%s\": \"%s\"}", DIFFBYTEMASK, DIFFDIRSPROPNAME, dirString);
 
             final JsonFactory jsonFactory = (new ObjectMapper()).getJsonFactory();
 
@@ -90,8 +89,6 @@ public class SchemaUtils {
 
         }
     }
-
-
 
 
 }
