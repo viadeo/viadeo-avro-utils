@@ -1,7 +1,5 @@
 package com.viadeo.avrodiff;
 
-import java.io.File;
-
 import com.viadeo.AvroUtilTest;
 import org.apache.avro.Schema;
 import org.apache.avro.file.DataFileReader;
@@ -20,27 +18,29 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-public class DiffTest extends AvroUtilTest  {
+import java.io.File;
 
-	@Rule
-	public TemporaryFolder tmpFolder = new TemporaryFolder();
+public class DiffTest extends AvroUtilTest {
 
-    public void create(String dirname, String filename, Record[] records) throws  Exception {
+    @Rule
+    public TemporaryFolder tmpFolder = new TemporaryFolder();
+
+    public void create(String dirname, String filename, Record[] records) throws Exception {
 
 
         Schema schema = TestSchema.getSchema();
 
         File dir = new File(tmpFolder.getRoot(), dirname);
 
-        if(!dir.exists() ){
+        if (!dir.exists()) {
             dir.mkdirs();
         }
 
-        File file = new File(dir,filename);
+        File file = new File(dir, filename);
         DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<GenericRecord>(schema);
         DataFileWriter<GenericRecord> dataFileWriter = new DataFileWriter<GenericRecord>(datumWriter);
         dataFileWriter.create(schema, file);
-        TestSchema.append(dataFileWriter,records);
+        TestSchema.append(dataFileWriter, records);
         dataFileWriter.close();
 
     }
@@ -71,14 +71,14 @@ public class DiffTest extends AvroUtilTest  {
     }
 
 
-	@Test
-	public void test42() throws Exception {
+    @Test
+    public void test42() throws Exception {
 
-		String outStr = tmpFolder.getRoot().getPath() + "/out-generic2";
+        String outStr = tmpFolder.getRoot().getPath() + "/out-generic2";
 
-        Path diffin 	= new Path( new File(tmpFolder.getRoot(), "a").toURI().toString());
-        Path diffout 	= new Path( new File(tmpFolder.getRoot(), "b").toURI().toString());
-        Path output 	= new Path(outStr);
+        Path diffin = new Path(new File(tmpFolder.getRoot(), "a").toURI().toString());
+        Path diffout = new Path(new File(tmpFolder.getRoot(), "b").toURI().toString());
+        Path output = new Path(outStr);
 
         Configuration jobConf = new Configuration();
         DiffJob job = new DiffJob();
@@ -88,5 +88,5 @@ public class DiffTest extends AvroUtilTest  {
         assertContainsOnly(base, "type=kernel", TestSchema.record("3", 3));
         assertContainsOnly(base, "type=add", TestSchema.record("4", 4));
         assertContainsOnly(base, "type=del", TestSchema.record("2", 2));
-	}
+    }
 }

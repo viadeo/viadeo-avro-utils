@@ -1,7 +1,5 @@
 package com.viadeo.avrodiff;
 
-import java.io.File;
-
 import com.viadeo.AvroUtilTest;
 import com.viadeo.avrocompact.CompactJob;
 import org.apache.avro.Schema;
@@ -21,28 +19,30 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import java.io.File;
 
-public class CompactTest  extends AvroUtilTest {
 
-	@Rule
-	public TemporaryFolder tmpFolder = new TemporaryFolder();
+public class CompactTest extends AvroUtilTest {
 
-    public void create(String dirname, String filename, Record[] records) throws  Exception {
+    @Rule
+    public TemporaryFolder tmpFolder = new TemporaryFolder();
+
+    public void create(String dirname, String filename, Record[] records) throws Exception {
 
 
         Schema schema = TestSchema.getSchema();
 
         File dir = new File(tmpFolder.getRoot(), dirname);
 
-        if(!dir.exists() ){
+        if (!dir.exists()) {
             dir.mkdirs();
         }
 
-        File file = new File(dir,filename);
+        File file = new File(dir, filename);
         DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<GenericRecord>(schema);
         DataFileWriter<GenericRecord> dataFileWriter = new DataFileWriter<GenericRecord>(datumWriter);
         dataFileWriter.create(schema, file);
-        TestSchema.append(dataFileWriter,records);
+        TestSchema.append(dataFileWriter, records);
         dataFileWriter.close();
 
     }
@@ -71,19 +71,19 @@ public class CompactTest  extends AvroUtilTest {
     }
 
 
-	@Test
-	public void test42() throws Exception {
+    @Test
+    public void test42() throws Exception {
 
-		String outStr = tmpFolder.getRoot().getPath() + "/out-generic2";
+        String outStr = tmpFolder.getRoot().getPath() + "/out-generic2";
 
-        Path diffin 	= new Path( new File(tmpFolder.getRoot(), "a").toURI().toString());
-        Path output 	= new Path(outStr);
+        Path diffin = new Path(new File(tmpFolder.getRoot(), "a").toURI().toString());
+        Path output = new Path(outStr);
 
         Configuration jobConf = new Configuration();
         CompactJob job = new CompactJob();
         Assert.assertTrue(job.internalRun(diffin, output, jobConf).waitForCompletion(true));
 
         String base = outStr + "/";
-        assertContainsOnly(base , TestSchema.record("2", 2));
-	}
+        assertContainsOnly(base, TestSchema.record("2", 2));
+    }
 }

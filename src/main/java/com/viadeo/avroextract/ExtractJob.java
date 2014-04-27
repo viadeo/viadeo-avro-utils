@@ -3,6 +3,8 @@ package com.viadeo.avroextract;
 import com.viadeo.SchemaUtils;
 import com.viadeo.StringUtils;
 import org.apache.avro.Schema;
+import org.apache.avro.generic.GenericRecord;
+import org.apache.avro.mapred.AvroKey;
 import org.apache.avro.mapreduce.AvroJob;
 import org.apache.avro.mapreduce.AvroKeyInputFormat;
 import org.apache.avro.mapreduce.AvroKeyOutputFormat;
@@ -13,6 +15,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
@@ -24,6 +27,28 @@ import java.io.IOException;
 public class ExtractJob extends Configured implements Tool {
 
     public static final String DIFFINDEX = "com.viadeo.extract.diffindex";
+
+
+    public static class ExtractMapper extends Mapper<AvroKey<GenericRecord>, NullWritable, AvroKey<GenericRecord>, NullWritable> {
+
+        private int diffindex;
+
+        @Override
+        public void map(AvroKey<GenericRecord> key, NullWritable value, Context context) throws IOException, InterruptedException {
+            byte[] bytemask = ((java.nio.ByteBuffer) key.datum().get(SchemaUtils.DIFFBYTEMASK)).array();
+
+            if (bytemask[diffindex] == 1) {
+                context.write(key, NullWritable.get());
+            }
+        }
+
+        @Override
+        protected void setup(Context context) throws IOException, InterruptedException {
+            diffindex = Integer.parseInt(context.getConfiguration().get(ExtractJob.DIFFINDEX));
+        }
+
+
+    }
 
 
     public Job internalRun(Path inputdir, String origdir, Path outputdir, Configuration conf) throws Exception {
@@ -57,7 +82,8 @@ public class ExtractJob extends Configured implements Tool {
 
         String prop = schema.getField(SchemaUtils.DIFFBYTEMASK).getProp(SchemaUtils.DIFFDIRSPROPNAME);
 
-        conf.set(DIFFINDEX, "" + StringUtils.indexOfClosestElement(origdir, prop.split(",")));
+        String indexValue = Integer.toString(StringUtils.indexOfClosestElement(origdir, prop.split(",")));
+        job.getConfiguration().set(DIFFINDEX, indexValue);
 
 
         Schema outSchema = SchemaUtils.removeField(schema, SchemaUtils.DIFFBYTEMASK);
