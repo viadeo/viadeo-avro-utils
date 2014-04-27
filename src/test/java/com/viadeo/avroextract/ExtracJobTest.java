@@ -12,6 +12,7 @@ import java.io.File;
 
 import static com.viadeo.AvroUtilTest.TestSchema.record;
 import static com.viadeo.AvroUtilTest.TestSchema.recordWithMask;
+import static com.viadeo.SchemaUtils.bmask;
 
 
 public class ExtracJobTest extends AvroUtilTest {
@@ -26,19 +27,6 @@ public class ExtracJobTest extends AvroUtilTest {
         create("in", "input.avro", records);
 
 
-    }
-
-
-    public static byte[] bmask(int... b) {
-        byte[] res = new byte[b.length];
-        for (int i = 0; i < b.length; i++) {
-            res[i] = (byte) b[i];
-        }
-        return res;
-    }
-
-    public static byte[] bmask(byte... b) {
-        return b;
     }
 
 

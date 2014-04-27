@@ -1,6 +1,7 @@
 package com.viadeo.avrondiff;
 
 import com.viadeo.AvroUtilTest;
+import com.viadeo.SchemaUtils;
 import org.apache.avro.generic.GenericData.Record;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -9,6 +10,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
+
+import static com.viadeo.SchemaUtils.bmask;
 
 public class DiffNTest extends AvroUtilTest {
 
@@ -21,19 +24,6 @@ public class DiffNTest extends AvroUtilTest {
         create("a", "input.avro", records);
 
         create("b", "input.avro", records2);
-    }
-
-
-    public static byte[] bmask(int... b) {
-        byte[] res = new byte[b.length];
-        for (int i = 0; i < b.length; i++) {
-            res[i] = (byte) b[i];
-        }
-        return res;
-    }
-
-    public static byte[] bmask(byte... b) {
-        return b;
     }
 
 

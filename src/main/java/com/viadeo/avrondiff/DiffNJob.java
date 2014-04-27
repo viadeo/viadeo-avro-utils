@@ -11,8 +11,6 @@ import org.apache.avro.mapreduce.AvroKeyInputFormat;
 import org.apache.avro.mapreduce.AvroKeyOutputFormat;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.NullWritable;
@@ -23,9 +21,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.Tool;
-import org.apache.hadoop.util.ToolRunner;
 
-import java.io.File;
 import java.io.IOException;
 
 public class DiffNJob extends Configured implements Tool {
@@ -59,17 +55,8 @@ public class DiffNJob extends Configured implements Tool {
         @Override
         protected void reduce(AvroKey<GenericData.Record> record, Iterable<IntWritable> sides, Context context) throws IOException, InterruptedException {
             GenericData.Record datum = record.datum();
-            datum.put(SchemaUtils.DIFFBYTEMASK, intsToMask(sides));
+            datum.put(SchemaUtils.DIFFBYTEMASK, SchemaUtils.intsToMask(sides, sizeOfBA));
             context.write(new AvroKey<GenericData.Record>(datum), NullWritable.get());
-        }
-
-        private byte[] intsToMask(Iterable<IntWritable> sides) {
-            byte[] bts = new byte[sizeOfBA];
-
-            for (IntWritable index : sides) {
-                bts[index.get()] = 1;
-            }
-            return bts;
         }
 
         @Override
@@ -89,26 +76,12 @@ public class DiffNJob extends Configured implements Tool {
         job.setJarByClass(DiffNJob.class);
         job.setJobName("diff");
 
-
-        FileSystem fileSystem = FileSystem.get(job.getConfiguration());
-
-        String[] dirs = inputDirs.split(",");
-        FileStatus[] inputFiles = fileSystem.globStatus(new Path(dirs[0]).suffix("/*.avro"));
-
-
-        if (inputFiles.length == 0) {
-            throw new Exception("At least one input is needed");
-        }
-
-        String schemaPath = conf.get("viadeo.avro.schema");
         Schema schema;
 
-        if (schemaPath == null)
-            schema = SchemaUtils.getSchema(inputFiles[0]);
-        else {
-            Schema.Parser parser = new Schema.Parser();
-            schema = parser.parse(new File(schemaPath));
-        }
+        String[] dirs = inputDirs.split(",");
+
+
+        schema = SchemaUtils.getSchema(conf, new Path(dirs[0]));
 
 
         Schema outSchema = SchemaUtils.addByteMask(schema, dirs);
@@ -163,12 +136,4 @@ public class DiffNJob extends Configured implements Tool {
 
         return 0;
     }
-
-    public static void main(String[] args) throws Exception {
-
-        int res = ToolRunner.run(new Configuration(), new DiffNJob(), args);
-        System.exit(res);
-    }
-
-
 }

@@ -14,8 +14,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
@@ -26,9 +24,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.Tool;
-import org.apache.hadoop.util.ToolRunner;
 
-import java.io.File;
 import java.io.IOException;
 
 public class DiffJob extends Configured implements Tool {
@@ -108,33 +104,12 @@ public class DiffJob extends Configured implements Tool {
         conf.set("viadeo.diff.diffoutpath", destInput.toString());
         conf.setBoolean("mapred.output.compress", true);
 
-
         Job job = new Job(conf);
         job.setJarByClass(DiffJob.class);
         job.setJobName("diff");
 
+        Schema schema = SchemaUtils.getSchema(conf, destInput);
 
-        FileSystem fileSystem = FileSystem.get(job.getConfiguration());
-        FileStatus[] inputFiles = fileSystem.globStatus(destInput.suffix("/*.avro"));
-
-
-        if (inputFiles.length == 0) {
-            throw new Exception("At least one input is needed");
-        }
-
-        String schemaPath = conf.get("viadeo.avro.schema");
-        Schema schema;
-        if (schemaPath == null)
-            schema = SchemaUtils.getSchema(inputFiles[0]);
-        else {
-            Schema.Parser parser = new Schema.Parser();
-            schema = parser.parse(new File(schemaPath));
-        }
-        //conf.set("avro.schema", schema);
-
-
-//	    FileInputFormat.setInputPaths(job, origInput);
-//	    FileOutputFormat.setOutputPath(job, destInput);
 
         FileInputFormat.setInputPaths(job, origInput, destInput);
         job.setInputFormatClass(AvroKeyInputFormat.class);
@@ -182,12 +157,4 @@ public class DiffJob extends Configured implements Tool {
 
         return 0;
     }
-
-    public static void main(String[] args) throws Exception {
-
-        int res = ToolRunner.run(new Configuration(), new DiffJob(), args);
-        System.exit(res);
-    }
-
-
 }

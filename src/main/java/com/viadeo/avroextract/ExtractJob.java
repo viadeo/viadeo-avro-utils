@@ -10,8 +10,6 @@ import org.apache.avro.mapreduce.AvroKeyInputFormat;
 import org.apache.avro.mapreduce.AvroKeyOutputFormat;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Job;
@@ -21,7 +19,6 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.Tool;
 
-import java.io.File;
 import java.io.IOException;
 
 public class ExtractJob extends Configured implements Tool {
@@ -61,23 +58,7 @@ public class ExtractJob extends Configured implements Tool {
         job.setJarByClass(ExtractJob.class);
         job.setJobName("extract");
 
-
-        FileSystem fileSystem = FileSystem.get(job.getConfiguration());
-        FileStatus[] inputFiles = fileSystem.globStatus(inputdir.suffix("/*.avro"));
-
-
-        if (inputFiles.length == 0) {
-            throw new Exception("At least one input is needed");
-        }
-
-        String schemaPath = conf.get("viadeo.avro.schema");
-        Schema schema;
-        if (schemaPath == null)
-            schema = SchemaUtils.getSchema(inputFiles[0]);
-        else {
-            Schema.Parser parser = new Schema.Parser();
-            schema = parser.parse(new File(schemaPath));
-        }
+        Schema schema = SchemaUtils.getSchema(conf, inputdir);
 
 
         String prop = schema.getField(SchemaUtils.DIFFBYTEMASK).getProp(SchemaUtils.DIFFDIRSPROPNAME);

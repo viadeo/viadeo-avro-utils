@@ -7,11 +7,15 @@ import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.mapred.FsInput;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.ObjectNode;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +39,30 @@ public class SchemaUtils {
         }
         outSchema.setFields(fields);
         return outSchema;
+    }
+
+
+    public static Schema getSchema(Configuration conf, Path dir) throws Exception {
+        Schema schema;
+        FileSystem fileSystem = FileSystem.get(conf);
+
+        FileStatus[] inputFiles = fileSystem.globStatus(dir.suffix("/*.avro"));
+
+
+        if (inputFiles.length == 0) {
+            throw new Exception("At least one input is needed");
+        }
+
+        String schemaPath = conf.get("viadeo.avro.schema");
+
+
+        if (schemaPath == null)
+            schema = getSchema(inputFiles[0]);
+        else {
+            Schema.Parser parser = new Schema.Parser();
+            schema = parser.parse(new File(schemaPath));
+        }
+        return schema;
     }
 
 
@@ -90,5 +118,24 @@ public class SchemaUtils {
         }
     }
 
+    public static byte[] intsToMask(Iterable<IntWritable> sides, int sizeOfBA) {
+        byte[] bts = new byte[sizeOfBA];
 
+        for (IntWritable index : sides) {
+            bts[index.get()] = 1;
+        }
+        return bts;
+    }
+
+    public static byte[] bmask(int... b) {
+        byte[] res = new byte[b.length];
+        for (int i = 0; i < b.length; i++) {
+            res[i] = (byte) b[i];
+        }
+        return res;
+    }
+
+    public static byte[] bmask(byte... b) {
+        return b;
+    }
 }
