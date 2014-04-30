@@ -60,10 +60,9 @@ public class ExtractJob extends Configured implements Tool {
 
         Schema schema = SchemaUtils.getSchema(conf, inputdir);
 
+        String[] prop = SchemaUtils.getDiffDirs(schema);
 
-        String prop = schema.getField(SchemaUtils.DIFFBYTEMASK).getProp(SchemaUtils.DIFFDIRSPROPNAME);
-
-        String indexValue = Integer.toString(StringUtils.indexOfClosestElement(origdir, prop.split(",")));
+        String indexValue = Integer.toString(StringUtils.indexOfClosestElement(origdir, prop));
         job.getConfiguration().set(DIFFINDEX, indexValue);
 
 

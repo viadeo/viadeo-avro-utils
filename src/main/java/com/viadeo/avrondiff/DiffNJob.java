@@ -74,7 +74,7 @@ public class DiffNJob extends Configured implements Tool {
 
         Job job = new Job(conf);
         job.setJarByClass(DiffNJob.class);
-        job.setJobName("diff");
+        job.setJobName("ndiff");
 
         Schema schema;
 

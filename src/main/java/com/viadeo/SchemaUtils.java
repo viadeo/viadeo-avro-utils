@@ -1,6 +1,11 @@
 package com.viadeo;
 
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.avro.Schema;
 import org.apache.avro.file.DataFileReader;
 import org.apache.avro.generic.GenericDatumReader;
@@ -9,16 +14,13 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.ByteWritable;
+import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.node.ArrayNode;
 import org.codehaus.jackson.node.ObjectNode;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class SchemaUtils {
 
@@ -75,6 +77,10 @@ public class SchemaUtils {
         return schema;
     }
 
+    public static String[] getDiffDirs(Schema schema){
+    	return schema.getField(SchemaUtils.DIFFBYTEMASK).getProp(SchemaUtils.DIFFDIRSPROPNAME).split(",");
+    }
+
     public static Schema addByteMask(Schema schema) {
 
         return addByteMask(schema, new String[]{});
@@ -82,6 +88,8 @@ public class SchemaUtils {
     }
 
     public static Schema addByteMask(Schema schema, String[] dirs) {
+
+    	schema = removeField(schema, DIFFBYTEMASK);
 
         try {
             // THANKS TO AVRO V.1.7.1 in CDH 4.1.2
@@ -113,8 +121,7 @@ public class SchemaUtils {
             return Schema.parse(jsonSchema.toString());
 
         } catch (IOException e) {
-            throw new RuntimeException("JSONYOLO");
-
+            throw new RuntimeException("JSON parsing error ", e);
         }
     }
 
@@ -126,6 +133,21 @@ public class SchemaUtils {
         }
         return bts;
     }
+
+    public static byte[] bytesBitmask(Iterable<BytesWritable> sides, int sizeOfBA){
+    	byte[] bts = new byte[sizeOfBA];
+
+    	for(BytesWritable bw: sides){
+    		byte[] oldBitmask = bw.getBytes();
+
+    		for(int i=0; i < sizeOfBA; i++) {
+    			bts[i] |= oldBitmask[i];
+    		}
+    	}
+
+    	return bts;
+    }
+
 
     public static byte[] bmask(int... b) {
         byte[] res = new byte[b.length];

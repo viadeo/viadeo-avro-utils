@@ -6,6 +6,12 @@ or
 hadoop jar avro-diff-assembly-1.0.jar com.viadeo.avrondiff.DiffNJob -D viadeo.avro.schema=schema.avsc -D mapred.compress.map.output=true /bi/sqoop/fromschema=viaduc/fromtable=PaymentTransaction/importdatetime=2014-02-09T01_36_39p01_00/fromserver=sqoop-sql-1 /bi/sqoop/fromschema=viaduc/fromtable=PaymentTransaction/importdatetime=2014-02-24T01_38_46p01_00/fromserver=sqoop-sql-1 /user/jbille/diffPaymentTransaction
 
 
+
+
+hadoop jar avro-ndiff-1.0-job.jar -D mapred.reduce.tasks=30 -D mapred.child.java.opts="-Xmx512m" extract <src-diff-file> <original-file> <target-file>
+
+
+
 to build:
 ./mvnw clean package
 
