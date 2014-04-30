@@ -1,6 +1,6 @@
 package com.viadeo.avromerge;
 
-import static com.viadeo.AvroUtilTest.TestSchema.recordWithMask;
+import static com.viadeo.AvroUtilTest.TestSchema.*;
 import static com.viadeo.SchemaUtils.bmask;
 
 import java.io.File;
@@ -22,24 +22,34 @@ public class MergeTest extends AvroUtilTest {
         GenericData.Record[] records = {
         		recordWithMask("3", 3, bmask(1, 1), new String[]{"a", "b"}),
                 recordWithMask("4", 4, bmask(0, 1)),
-                recordWithMask("2", 2, bmask(1, 0))};
+                recordWithMask("2", 2, bmask(1, 0))
+                };
 
         create("ma", "input.avro", records);
 
         GenericData.Record[] records2 = {
         		recordWithMask("5", 5, bmask(1, 1), new String[]{"b", "c"}),
                 recordWithMask("4", 4, bmask(0, 1)),
-                recordWithMask("2", 2, bmask(0, 1))};
+                recordWithMask("2", 2, bmask(0, 1))
+                };
 
         create("mb", "input.avro", records2);
 
+
+        GenericData.Record[] records3 = {
+        		record("5", 5),
+        		record("6", 6)
+                };
+
+        create("d", "input.avro", records3);
 	}
 
 	@Test
 	public void transpose() {
 		Assert.assertArrayEquals(new int[]{2, 0},MergeJob.computeTranspose(
 				new String[]{ "a",  "b"},
-				new String[] {"b", "c", "a"}));
+				new String[] {"b", "c", "a"})
+				);
 	}
 
 	@Test
@@ -49,7 +59,6 @@ public class MergeTest extends AvroUtilTest {
 		Map<String, String[]> parseDirConf = MergeJob.parseDirConf(input);
 
 		Assert.assertTrue(parseDirConf.containsKey("file:/tmp/junit2081435449853568838/ma"));
-
 	}
 
 	@Test
@@ -58,12 +67,14 @@ public class MergeTest extends AvroUtilTest {
 		String outStr = tmpFolder.getRoot().getPath() + "/out-generic";
 
 		Path diffin = new Path(new File(tmpFolder.getRoot(), "ma").toURI().toString());
-		Path diffout = new Path(new File(tmpFolder.getRoot(), "mb").toURI().toString());
+		Path diffin2 = new Path(new File(tmpFolder.getRoot(), "mb").toURI().toString());
+		Path diffin3 = new Path(new File(tmpFolder.getRoot(), "d").toURI().toString());
+
 		Path output = new Path(outStr);
 
 		Configuration jobConf = new Configuration();
 		MergeJob job = new MergeJob();
-		Assert.assertTrue(job.internalRun(diffin.toString() + "," + diffout.toString(), output, jobConf).waitForCompletion(true));
+		Assert.assertTrue(job.internalRun(diffin.toString() + "," + diffin2.toString() + "," + diffin3.toString(), output, jobConf).waitForCompletion(true));
 
 //		Thread.sleep(100000000000l);
 
@@ -71,8 +82,10 @@ public class MergeTest extends AvroUtilTest {
 		String base = outStr + "/";
 
 
-		assertContains(base, TestSchema.recordWithMask("3", 3, bmask(1, 1, 0)));
-		assertContains(base, TestSchema.recordWithMask("4", 4, bmask(0, 1, 1)));
-		assertContains(base, TestSchema.recordWithMask("2", 2, bmask(1, 0, 1)));
+		assertContains(base, TestSchema.recordWithMask("3", 3, bmask(1, 1, 0, 0)));
+		assertContains(base, TestSchema.recordWithMask("4", 4, bmask(0, 1, 1, 0)));
+		assertContains(base, TestSchema.recordWithMask("2", 2, bmask(1, 0, 1, 0)));
+		assertContains(base, TestSchema.recordWithMask("6", 6, bmask(0, 0, 0, 1)));
+		assertContains(base, TestSchema.recordWithMask("5", 5, bmask(0, 1, 1, 1)));
 	}
 }

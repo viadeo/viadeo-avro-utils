@@ -18,13 +18,10 @@ import org.apache.avro.mapred.AvroKey;
 import org.apache.avro.mapreduce.AvroJob;
 import org.apache.avro.mapreduce.AvroKeyInputFormat;
 import org.apache.avro.mapreduce.AvroKeyOutputFormat;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -47,7 +44,8 @@ public class MergeJob extends Configured implements Tool {
 
     	for(String line:conf.split("\n")) {
     		String[] lineStruct = line.split("\\|");
-    		hm.put(lineStruct[0], lineStruct[1].split(","));
+    		String[] value = (lineStruct.length == 1) ? new String[0] : lineStruct[1].split(",");
+    		hm.put(lineStruct[0], value);
     	}
 
     	return hm;
@@ -102,34 +100,21 @@ public class MergeJob extends Configured implements Tool {
 
         @Override
         protected void setup(Context context) throws IOException, InterruptedException {
-        	Log log = LogFactory.getLog(MergeMapper.class);
 
             filename = ((FileSplit) context.getInputSplit()).getPath().getParent().toString() + "/";
-
-
             jobDirs = context.getConfiguration().get(MergeJob.DIFFPATHS).split(",");
 
-
-            log.info("JobDIRS: " + Arrays.toString(jobDirs));
-
-            log.info("DIRSCONF: " + context.getConfiguration().get(DIRSCONF));
-
             Map<String,String[]> hm = parseDirConf(context.getConfiguration().get(DIRSCONF));
-
-            System.out.println("MergeJob.MergeMapper.setup(): " + hm);
 
             String[] keys = hm.keySet().toArray(new String[0]);
             inputDirs = hm.get(keys[StringUtils.indexOfClosestElement(filename, keys)]);
 
-            log.info("Input dirs: " + Arrays.toString(inputDirs));
             isDiffFile = inputDirs.length != 0;
             indexFile = StringUtils.indexOfClosestElement(filename, jobDirs);
 
             emptyB = new byte[jobDirs.length];
 
             transpose = computeTranspose(inputDirs, jobDirs);
-
-        	log.info(Arrays.toString(transpose));
 
         }
     }
