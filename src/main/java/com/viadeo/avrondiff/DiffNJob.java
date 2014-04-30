@@ -69,8 +69,6 @@ public class DiffNJob extends Configured implements Tool {
     public Job internalRun(String inputDirs, Path outputDir, Configuration conf) throws Exception {
 
         conf.set(DIFFPATHS, inputDirs);
-        conf.setBoolean("mapred.output.compress", true);
-
 
         Job job = new Job(conf);
         job.setJarByClass(DiffNJob.class);

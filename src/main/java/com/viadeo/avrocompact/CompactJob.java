@@ -23,9 +23,6 @@ public class CompactJob extends Configured implements Tool {
 
     public Job internalRun(Path inputDir, Path outputDir, Configuration conf) throws Exception {
 
-
-        conf.setBoolean("mapred.output.compress", true);
-
         Job job = new Job(conf);
         job.setJarByClass(CompactJob.class);
         job.setJobName("compact");

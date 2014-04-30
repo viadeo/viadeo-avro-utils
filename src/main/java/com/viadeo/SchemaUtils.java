@@ -106,7 +106,7 @@ public class SchemaUtils {
 
             }
 
-            final String fieldSchema = String.format("{\"name\":\"%s\", \"type\":\"bytes\",\"default\":\"0\",\"%s\": \"%s\"}", DIFFBYTEMASK, DIFFDIRSPROPNAME, dirString);
+            final String fieldSchema = String.format("{\"name\":\"%s\", \"type\":\"bytes\",\"order\":\"ignore\",\"default\":\"0\",\"%s\": \"%s\"}", DIFFBYTEMASK, DIFFDIRSPROPNAME, dirString);
 
             final JsonFactory jsonFactory = (new ObjectMapper()).getJsonFactory();
 

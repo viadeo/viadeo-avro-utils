@@ -92,10 +92,7 @@ public class MergeJob extends Configured implements Tool {
         		res[indexFile] = 1;
         	}
 
-        	GenericRecord datum = key.datum();
-        	datum.put(SchemaUtils.DIFFBYTEMASK, emptyB);
-
-            context.write(new AvroKey<GenericRecord>(datum), new BytesWritable(res));
+            context.write(key, new BytesWritable(res));
         }
 
         @Override
@@ -144,7 +141,6 @@ public class MergeJob extends Configured implements Tool {
     public Job internalRun(String inputDirs, Path outputDir, Configuration conf) throws Exception {
 
         //conf.set(DIFFPATHS, inputDirs);
-        conf.setBoolean("mapred.output.compress", true);
 
 
         Job job = new Job(conf);
@@ -183,6 +179,7 @@ public class MergeJob extends Configured implements Tool {
 
 
         Schema outSchema = SchemaUtils.addByteMask(schema, deRefDir.toArray(new String[0]));
+
 
         System.out.println(outSchema);
 

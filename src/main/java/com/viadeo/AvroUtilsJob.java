@@ -45,7 +45,14 @@ public class AvroUtilsJob extends Configured implements Tool {
 
 
     public static void main(String[] args) throws Exception {
-        int res = ToolRunner.run(new Configuration(), new AvroUtilsJob(), args);
+
+    	Configuration conf = new Configuration();
+    	conf.setBoolean("mapred.output.compress", true);
+    	conf.setBoolean("mapred.reduce.tasks.speculative.execution", false);
+    	conf.setInt("mapred.reduce.tasks", 30);
+    	conf.set("mapred.child.java.opts", "-Xmx512m");
+
+        int res = ToolRunner.run(conf, new AvroUtilsJob(), args);
         System.exit(res);
     }
 

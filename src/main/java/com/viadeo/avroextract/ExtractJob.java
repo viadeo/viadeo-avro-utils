@@ -50,10 +50,6 @@ public class ExtractJob extends Configured implements Tool {
 
     public Job internalRun(Path inputdir, String origdir, Path outputdir, Configuration conf) throws Exception {
 
-
-        conf.setBoolean("mapred.output.compress", true);
-
-
         Job job = new Job(conf);
         job.setJarByClass(ExtractJob.class);
         job.setJobName("extract");

@@ -102,7 +102,6 @@ public class DiffJob extends Configured implements Tool {
 
         conf.set("viadeo.diff.diffinpath", origInput.toString());
         conf.set("viadeo.diff.diffoutpath", destInput.toString());
-        conf.setBoolean("mapred.output.compress", true);
 
         Job job = new Job(conf);
         job.setJarByClass(DiffJob.class);
