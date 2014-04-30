@@ -1,18 +1,17 @@
 package com.viadeo;
 
 
-import java.util.Arrays;
-
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.conf.Configured;
-import org.apache.hadoop.util.Tool;
-import org.apache.hadoop.util.ToolRunner;
-
 import com.viadeo.avrocompact.CompactJob;
 import com.viadeo.avrodiff.DiffJob;
 import com.viadeo.avroextract.ExtractJob;
 import com.viadeo.avromerge.MergeJob;
 import com.viadeo.avrondiff.DiffNJob;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
+
+import java.util.Arrays;
 
 public class AvroUtilsJob extends Configured implements Tool {
 
@@ -37,20 +36,20 @@ public class AvroUtilsJob extends Configured implements Tool {
             return ToolRunner.run(getConf(), new ExtractJob(), remainingArgs);
         } else if (toolName.equals("merge")) {
             return ToolRunner.run(getConf(), new MergeJob(), remainingArgs);
-        }else {
-        	System.err.println("Wront tool. Available: diff|diffn|extract|merge");
-        	return -1;
+        } else {
+            System.err.println("Wront tool. Available: diff|diffn|extract|merge");
+            return -1;
         }
     }
 
 
     public static void main(String[] args) throws Exception {
 
-    	Configuration conf = new Configuration();
-    	conf.setBoolean("mapred.output.compress", true);
-    	conf.setBoolean("mapred.reduce.tasks.speculative.execution", false);
-    	conf.setInt("mapred.reduce.tasks", 30);
-    	conf.set("mapred.child.java.opts", "-Xmx512m");
+        Configuration conf = new Configuration();
+        conf.setBoolean("mapred.output.compress", true);
+        conf.setBoolean("mapred.reduce.tasks.speculative.execution", false);
+        conf.setInt("mapred.reduce.tasks", 30);
+        conf.set("mapred.child.java.opts", "-Xmx512m");
 
         int res = ToolRunner.run(conf, new AvroUtilsJob(), args);
         System.exit(res);

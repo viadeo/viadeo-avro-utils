@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public abstract class AvroUtilTest {
 
@@ -109,6 +110,19 @@ public abstract class AvroUtilTest {
             return schema;
         }
 
+        public static Schema getSchemaWithAddField() {
+            ArrayList<Schema.Field> fields = new ArrayList<Schema.Field>();
+
+            fields.add(new Schema.Field("key", Schema.create(Schema.Type.STRING), null, null));
+            fields.add(new Schema.Field("value", Schema.create(Schema.Type.INT), null, null));
+            fields.add(new Schema.Field("w", Schema.createUnion(Arrays.asList(Schema.create(Schema.Type.STRING), Schema.create(Schema.Type.NULL))), null, null));
+            Schema schema = Schema.createRecord("ahoy", null, "plouf", false);
+            schema.setFields(fields);
+
+            return schema;
+
+        }
+
         public static GenericData.Record record(String k, Integer v) {
             GenericData.Record record = new GenericData.Record(getSchema());
             record.put(0, k);
@@ -125,12 +139,34 @@ public abstract class AvroUtilTest {
             }
         }
 
+        public static GenericData.Record recordWithExtraField(String k, int v, String w) {
+            GenericData.Record record = new GenericData.Record(getSchemaWithAddField());
+            record.put(KEY, k);
+            record.put(VALUE, v);
+            record.put("w", w);
+            return record;
+        }
+
         public static GenericData.Record recordWithMask(String k, int v, byte[] mask, String[] dirs) {
             GenericData.Record record = new GenericData.Record(SchemaUtils.addByteMask(getSchema(), dirs));
             record.put(KEY, k);
             record.put(VALUE, v);
             record.put(SchemaUtils.DIFFBYTEMASK, mask);
             return record;
+        }
+
+        public static GenericData.Record recordWithExtraFieldWithMask(String k, int v, String w, byte[] mask, String[] dirs) {
+            GenericData.Record record = new GenericData.Record(SchemaUtils.addByteMask(getSchemaWithAddField(), dirs));
+            record.put(KEY, k);
+            record.put(VALUE, v);
+            record.put(SchemaUtils.DIFFBYTEMASK, mask);
+            record.put("w", w);
+            return record;
+
+        }
+
+        public static GenericData.Record recordWithExtraFieldWithMask(String k, int v, String w, byte[] mask) {
+            return recordWithExtraFieldWithMask(k, v, w, mask, new String[0]);
         }
 
         public static GenericData.Record recordWithMask(String k, int v, byte[] mask) {

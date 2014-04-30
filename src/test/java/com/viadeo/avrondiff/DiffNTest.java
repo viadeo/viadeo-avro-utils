@@ -1,9 +1,6 @@
 package com.viadeo.avrondiff;
 
-import static com.viadeo.SchemaUtils.bmask;
-
-import java.io.File;
-
+import com.viadeo.AvroUtilTest;
 import org.apache.avro.generic.GenericData.Record;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -11,7 +8,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.viadeo.AvroUtilTest;
+import java.io.File;
+
+import static com.viadeo.SchemaUtils.bmask;
 
 public class DiffNTest extends AvroUtilTest {
 

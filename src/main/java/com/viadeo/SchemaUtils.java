@@ -1,11 +1,6 @@
 package com.viadeo;
 
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.avro.Schema;
 import org.apache.avro.file.DataFileReader;
 import org.apache.avro.generic.GenericDatumReader;
@@ -14,13 +9,17 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.ByteWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.node.ArrayNode;
+import org.codehaus.jackson.node.NullNode;
 import org.codehaus.jackson.node.ObjectNode;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 
 public class SchemaUtils {
 
@@ -44,27 +43,25 @@ public class SchemaUtils {
     }
 
 
+    public static Schema getConfSchema(Configuration conf) throws Exception {
+        String schemaPath = conf.get("viadeo.avro.schema");
+        if (schemaPath == null) {
+            return null;
+        } else {
+            Schema.Parser parser = new Schema.Parser();
+            return parser.parse(new File(schemaPath));
+        }
+    }
+
     public static Schema getSchema(Configuration conf, Path dir) throws Exception {
-        Schema schema;
         FileSystem fileSystem = FileSystem.get(conf);
-
         FileStatus[] inputFiles = fileSystem.globStatus(dir.suffix("/*.avro"));
-
 
         if (inputFiles.length == 0) {
             throw new Exception("At least one input is needed");
         }
 
-        String schemaPath = conf.get("viadeo.avro.schema");
-
-
-        if (schemaPath == null)
-            schema = getSchema(inputFiles[0]);
-        else {
-            Schema.Parser parser = new Schema.Parser();
-            schema = parser.parse(new File(schemaPath));
-        }
-        return schema;
+        return getSchema(inputFiles[0]);
     }
 
 
@@ -77,8 +74,8 @@ public class SchemaUtils {
         return schema;
     }
 
-    public static String[] getDiffDirs(Schema schema){
-    	return schema.getField(SchemaUtils.DIFFBYTEMASK).getProp(SchemaUtils.DIFFDIRSPROPNAME).split(",");
+    public static String[] getDiffDirs(Schema schema) {
+        return schema.getField(SchemaUtils.DIFFBYTEMASK).getProp(SchemaUtils.DIFFDIRSPROPNAME).split(",");
     }
 
     public static Schema addByteMask(Schema schema) {
@@ -89,7 +86,7 @@ public class SchemaUtils {
 
     public static Schema addByteMask(Schema schema, String[] dirs) {
 
-    	schema = removeField(schema, DIFFBYTEMASK);
+        schema = removeField(schema, DIFFBYTEMASK);
 
         try {
             // THANKS TO AVRO V.1.7.1 in CDH 4.1.2
@@ -134,18 +131,18 @@ public class SchemaUtils {
         return bts;
     }
 
-    public static byte[] bytesBitmask(Iterable<BytesWritable> sides, int sizeOfBA){
-    	byte[] bts = new byte[sizeOfBA];
+    public static byte[] bytesBitmask(Iterable<BytesWritable> sides, int sizeOfBA) {
+        byte[] bts = new byte[sizeOfBA];
 
-    	for(BytesWritable bw: sides){
-    		byte[] oldBitmask = bw.getBytes();
+        for (BytesWritable bw : sides) {
+            byte[] oldBitmask = bw.getBytes();
 
-    		for(int i=0; i < sizeOfBA; i++) {
-    			bts[i] |= oldBitmask[i];
-    		}
-    	}
+            for (int i = 0; i < sizeOfBA; i++) {
+                bts[i] |= oldBitmask[i];
+            }
+        }
 
-    	return bts;
+        return bts;
     }
 
 
@@ -159,5 +156,42 @@ public class SchemaUtils {
 
     public static byte[] bmask(byte... b) {
         return b;
+    }
+
+    public static Schema constructSchema(Schema schema, Map<String, Schema.Field> fieldMap) {
+        Schema outSchema;
+        outSchema = Schema.createRecord(schema.getName(), schema.getDoc(), schema.getNamespace(), schema.isError());
+
+        SortedMap<String, Schema.Field> sMap = new TreeMap<String, Schema.Field>();
+        for (Schema.Field f : fieldMap.values()) {
+            sMap.put(String.format("%03d%s", f.pos(), f.name()), f);
+        }
+
+        List<Schema.Field> fields = new ArrayList<Schema.Field>();
+        for (Schema.Field f : sMap.values()) {
+
+            Schema fieldSchema = f.schema();
+
+            List<Schema> schemaList = new ArrayList<Schema>();
+
+            // THE ORDER MATTER : https://issues.apache.org/jira/browse/AVRO-1118
+            schemaList.add(Schema.create(Schema.Type.NULL));
+
+            if (fieldSchema.getType().equals(Schema.Type.UNION)) {
+                for (Schema t : fieldSchema.getTypes()) {
+                    if (!t.getType().equals(Schema.Type.NULL)) {
+                        schemaList.add(t);
+                    }
+                }
+            } else {
+                schemaList.add(fieldSchema);
+            }
+
+            Schema fschema = Schema.createUnion(schemaList);
+            fields.add(new Schema.Field(f.name(), fschema, f.doc(), NullNode.getInstance()));
+        }
+
+        outSchema.setFields(fields);
+        return outSchema;
     }
 }

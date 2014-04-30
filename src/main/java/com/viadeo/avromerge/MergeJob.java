@@ -1,16 +1,7 @@
 package com.viadeo.avromerge;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import com.viadeo.SchemaUtils;
+import com.viadeo.StringUtils;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
@@ -31,66 +22,66 @@ import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.Tool;
 
-import com.viadeo.SchemaUtils;
-import com.viadeo.StringUtils;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.*;
 
 public class MergeJob extends Configured implements Tool {
 
     public static final String DIFFPATHS = "viadeo.diff.diffinpaths";
     public static final String DIRSCONF = "merge.dirsconf";
 
-    public static Map<String,String[]> parseDirConf(String conf) {
-    	Map<String,String[]> hm = new HashMap<String, String[]>();
+    public static Map<String, String[]> parseDirConf(String conf) {
+        Map<String, String[]> hm = new HashMap<String, String[]>();
 
-    	for(String line:conf.split("\n")) {
-    		String[] lineStruct = line.split("\\|");
-    		String[] value = (lineStruct.length == 1) ? new String[0] : lineStruct[1].split(",");
-    		hm.put(lineStruct[0], value);
-    	}
+        for (String line : conf.split("\n")) {
+            String[] lineStruct = line.split("\\|");
+            String[] value = (lineStruct.length == 1) ? new String[0] : lineStruct[1].split(",");
+            hm.put(lineStruct[0], value);
+        }
 
-    	return hm;
+        return hm;
     }
 
-	public static int[] computeTranspose(String[] inputDirs, String[] jobDirs) {
-		List<String> jobDirAsList = Arrays.asList(jobDirs);
+    public static int[] computeTranspose(String[] inputDirs, String[] jobDirs) {
+        List<String> jobDirAsList = Arrays.asList(jobDirs);
 
-		int[] transpose = new int[inputDirs.length];
-    	for (int i = 0; i < inputDirs.length; i++) {
-			String b = inputDirs[i];
-			transpose[i] = jobDirAsList.indexOf(b);
-    	}
+        int[] transpose = new int[inputDirs.length];
+        for (int i = 0; i < inputDirs.length; i++) {
+            String b = inputDirs[i];
+            transpose[i] = jobDirAsList.indexOf(b);
+        }
 
-    	return transpose;
-	}
-
+        return transpose;
+    }
 
 
     public static class MergeMapper extends Mapper<AvroKey<GenericRecord>, NullWritable, AvroKey<GenericRecord>, BytesWritable> {
 
-    	public String filename;
-    	public String[] jobDirs;
-    	public String[] inputDirs;
-    	public boolean isDiffFile;
-    	public int indexFile;
-    	public byte[] emptyB;
-    	public int[] transpose;
+        public String filename;
+        public String[] jobDirs;
+        public String[] inputDirs;
+        public boolean isDiffFile;
+        public int indexFile;
+        public byte[] emptyB;
+        public int[] transpose;
 
         @Override
         public void map(AvroKey<GenericRecord> key, NullWritable value, Context context) throws IOException, InterruptedException {
 
 
-        	byte[] res = new byte[jobDirs.length];
-        	if(isDiffFile) {
-        		ByteBuffer bb = (ByteBuffer) key.datum().get(SchemaUtils.DIFFBYTEMASK);
-        		byte[] inputmask = bb.array();
+            byte[] res = new byte[jobDirs.length];
+            if (isDiffFile) {
+                ByteBuffer bb = (ByteBuffer) key.datum().get(SchemaUtils.DIFFBYTEMASK);
+                byte[] inputmask = bb.array();
 
-        		for(int i = 0; i < inputDirs.length; i ++) {
-        			res[transpose[i]] = inputmask[i];
-        		}
+                for (int i = 0; i < inputDirs.length; i++) {
+                    res[transpose[i]] = inputmask[i];
+                }
 
-        	} else {
-        		res[indexFile] = 1;
-        	}
+            } else {
+                res[indexFile] = 1;
+            }
 
             context.write(key, new BytesWritable(res));
         }
@@ -101,7 +92,7 @@ public class MergeJob extends Configured implements Tool {
             filename = ((FileSplit) context.getInputSplit()).getPath().getParent().toString() + "/";
             jobDirs = context.getConfiguration().get(MergeJob.DIFFPATHS).split(",");
 
-            Map<String,String[]> hm = parseDirConf(context.getConfiguration().get(DIRSCONF));
+            Map<String, String[]> hm = parseDirConf(context.getConfiguration().get(DIRSCONF));
 
             String[] keys = hm.keySet().toArray(new String[0]);
             inputDirs = hm.get(keys[StringUtils.indexOfClosestElement(filename, keys)]);
@@ -123,12 +114,12 @@ public class MergeJob extends Configured implements Tool {
         @Override
         protected void reduce(AvroKey<GenericData.Record> record, Iterable<BytesWritable> sides, Context context) throws IOException, InterruptedException {
 
-        	// merge BytesArray
-        	byte[] bytesMask = SchemaUtils.bytesBitmask(sides, sizeOfBA);
+            // merge BytesArray
+            byte[] bytesMask = SchemaUtils.bytesBitmask(sides, sizeOfBA);
 
-        	GenericData.Record datum = record.datum();
-        	datum.put(SchemaUtils.DIFFBYTEMASK, bytesMask);
-        	context.write(new AvroKey<GenericData.Record>(datum), NullWritable.get());
+            GenericData.Record datum = record.datum();
+            datum.put(SchemaUtils.DIFFBYTEMASK, bytesMask);
+            context.write(new AvroKey<GenericData.Record>(datum), NullWritable.get());
         }
 
         @Override
@@ -147,38 +138,36 @@ public class MergeJob extends Configured implements Tool {
         job.setJarByClass(MergeJob.class);
         job.setJobName("merge");
 
-        Schema schema;
-
         String[] dirs = inputDirs.split(",");
 
-        Set<String> deRefDirSet = new HashSet<String>();
+        SortedSet<String> deRefDir = new TreeSet<String>();
         StringBuilder dirsConf = new StringBuilder();
 
-        for(String dir:dirs) {
-        	Schema tempS = SchemaUtils.getSchema(conf, new Path(dir));
-        	if(null != tempS.getField(SchemaUtils.DIFFBYTEMASK)) {
-        		String[] insideDirs = SchemaUtils.getDiffDirs(tempS);
-        		deRefDirSet.addAll(Arrays.asList(insideDirs));
-        		dirsConf.append(dir).append("|").append(StringUtils.mkString(insideDirs, ","));
-        	} else {
-        		deRefDirSet.add(dir);
-        		dirsConf.append(dir).append("|");
-        	}
-        	dirsConf.append("\n");
-        }
+        Map<String, Schema.Field> fieldMap = new HashMap<String, Schema.Field>();
 
-        List<String> deRefDir = new ArrayList<String>();
-        deRefDir.addAll(deRefDirSet);
-        Collections.sort(deRefDir);
+        Schema tempS = null;
+        for (String dir : dirs) {
+            tempS = SchemaUtils.getSchema(conf, new Path(dir));
+            if (null != tempS.getField(SchemaUtils.DIFFBYTEMASK)) {
+                String[] insideDirs = SchemaUtils.getDiffDirs(tempS);
+                deRefDir.addAll(Arrays.asList(insideDirs));
+                dirsConf.append(dir).append("|").append(StringUtils.mkString(insideDirs, ","));
+            } else {
+                deRefDir.add(dir);
+                dirsConf.append(dir).append("|");
+            }
+            dirsConf.append("\n");
+
+            for (Schema.Field f : tempS.getFields()) {
+                fieldMap.put(f.name(), f);
+            }
+        }
 
         job.getConfiguration().set(DIFFPATHS, StringUtils.mkString(deRefDir.toArray(new String[0]), ","));
 
-        schema = SchemaUtils.getSchema(conf, new Path(dirs[0]));
-
         job.getConfiguration().set(DIRSCONF, dirsConf.toString());
 
-
-        Schema outSchema = SchemaUtils.addByteMask(schema, deRefDir.toArray(new String[0]));
+        Schema outSchema = SchemaUtils.addByteMask(SchemaUtils.constructSchema(tempS, fieldMap), deRefDir.toArray(new String[0]));
 
 
         System.out.println(outSchema);
