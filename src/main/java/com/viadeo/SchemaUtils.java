@@ -9,8 +9,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.node.ArrayNode;
@@ -27,6 +26,8 @@ public class SchemaUtils {
 
     public static final String DIFFDIRSPROPNAME = "diffdirs";
 
+    public static final char ZERO = '0';
+    public static final char ONE = '1';
 
     public static Schema removeField(Schema schema, String fieldname) {
         Schema outSchema;
@@ -103,7 +104,7 @@ public class SchemaUtils {
 
             }
 
-            final String fieldSchema = String.format("{\"name\":\"%s\", \"type\":\"bytes\",\"order\":\"ignore\",\"default\":\"0\",\"%s\": \"%s\"}", DIFFBYTEMASK, DIFFDIRSPROPNAME, dirString);
+            final String fieldSchema = String.format("{\"name\":\"%s\", \"type\":\"string\",\"order\":\"ignore\",\"default\":\"\",\"%s\": \"%s\"}", DIFFBYTEMASK, DIFFDIRSPROPNAME, dirString);
 
             final JsonFactory jsonFactory = (new ObjectMapper()).getJsonFactory();
 
@@ -122,40 +123,41 @@ public class SchemaUtils {
         }
     }
 
-    public static byte[] intsToMask(Iterable<IntWritable> sides, int sizeOfBA) {
-        byte[] bts = new byte[sizeOfBA];
+    public static String bytesBitmask(Iterable<Text> sides, int sizeOfBA) {
+        char[] bts = initBitmask(sizeOfBA);
 
-        for (IntWritable index : sides) {
-            bts[index.get()] = 1;
-        }
-        return bts;
-    }
-
-    public static byte[] bytesBitmask(Iterable<BytesWritable> sides, int sizeOfBA) {
-        byte[] bts = new byte[sizeOfBA];
-
-        for (BytesWritable bw : sides) {
-            byte[] oldBitmask = bw.getBytes();
+        for (Text t : sides) {
+            char[] oldBitmask = t.toString().toCharArray();
 
             for (int i = 0; i < sizeOfBA; i++) {
-                bts[i] |= oldBitmask[i];
+            	if(oldBitmask[i] == ONE){
+            		bts[i] = ONE;
+            	}
             }
         }
 
-        return bts;
+        return new String(bts);
     }
 
 
-    public static byte[] bmask(int... b) {
-        byte[] res = new byte[b.length];
+    public static String bmask(int... b) {
+        char[] res = initBitmask(b.length);
         for (int i = 0; i < b.length; i++) {
-            res[i] = (byte) b[i];
+        	if(b[i] == 1){
+        		res[i] = ONE;
+        	}
         }
-        return res;
+        return new String(res);
     }
 
     public static byte[] bmask(byte... b) {
         return b;
+    }
+
+    public static char[] initBitmask(int size){
+        char[] mask = new char[size];
+        Arrays.fill(mask, SchemaUtils.ZERO);
+        return mask;
     }
 
     public static Schema constructSchema(Schema schema, Map<String, Schema.Field> fieldMap) {

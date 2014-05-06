@@ -34,7 +34,7 @@ public class AvroUtilsJob extends Configured implements Tool {
         } else if (toolName.equals("merge")) {
             return ToolRunner.run(getConf(), new MergeJob(), remainingArgs);
         } else {
-            System.err.println("Wront tool. Available: diff|extract|merge");
+            System.err.println("Wrong tool. Available: diff|extract|merge");
             return -1;
         }
     }

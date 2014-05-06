@@ -147,7 +147,7 @@ public abstract class AvroUtilTest {
             return record;
         }
 
-        public static GenericData.Record recordWithMask(String k, int v, byte[] mask, String[] dirs) {
+        public static GenericData.Record recordWithMask(String k, int v, String mask, String[] dirs) {
             GenericData.Record record = new GenericData.Record(SchemaUtils.addByteMask(getSchema(), dirs));
             record.put(KEY, k);
             record.put(VALUE, v);
@@ -155,7 +155,7 @@ public abstract class AvroUtilTest {
             return record;
         }
 
-        public static GenericData.Record recordWithExtraFieldWithMask(String k, int v, String w, byte[] mask, String[] dirs) {
+        public static GenericData.Record recordWithExtraFieldWithMask(String k, int v, String w, String mask, String[] dirs) {
             GenericData.Record record = new GenericData.Record(SchemaUtils.addByteMask(getSchemaWithAddField(), dirs));
             record.put(KEY, k);
             record.put(VALUE, v);
@@ -165,11 +165,11 @@ public abstract class AvroUtilTest {
 
         }
 
-        public static GenericData.Record recordWithExtraFieldWithMask(String k, int v, String w, byte[] mask) {
+        public static GenericData.Record recordWithExtraFieldWithMask(String k, int v, String w, String mask) {
             return recordWithExtraFieldWithMask(k, v, w, mask, new String[0]);
         }
 
-        public static GenericData.Record recordWithMask(String k, int v, byte[] mask) {
+        public static GenericData.Record recordWithMask(String k, int v, String mask) {
             return recordWithMask(k, v, mask, new String[0]);
 
         }

@@ -55,7 +55,6 @@ public class DiffJob extends Configured implements Tool {
             }
 
             fileName = new Text(res);
-            log.info("------------------------------------------------------" + fileName);
 
         }
     }

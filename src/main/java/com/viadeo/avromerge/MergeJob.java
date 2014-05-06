@@ -1,7 +1,13 @@
 package com.viadeo.avromerge;
 
-import com.viadeo.SchemaUtils;
-import com.viadeo.StringUtils;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
@@ -12,8 +18,8 @@ import org.apache.avro.mapreduce.AvroKeyOutputFormat;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -22,9 +28,8 @@ import org.apache.hadoop.mapreduce.lib.input.FileSplit;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.Tool;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.*;
+import com.viadeo.SchemaUtils;
+import com.viadeo.StringUtils;
 
 public class MergeJob extends Configured implements Tool {
 
@@ -56,24 +61,23 @@ public class MergeJob extends Configured implements Tool {
     }
 
 
-    public static class MergeMapper extends Mapper<AvroKey<GenericRecord>, NullWritable, AvroKey<GenericRecord>, BytesWritable> {
+    public static class MergeMapper extends Mapper<AvroKey<GenericRecord>, NullWritable, AvroKey<GenericRecord>, Text> {
 
         public String filename;
         public String[] jobDirs;
         public String[] inputDirs;
         public boolean isDiffFile;
         public int indexFile;
-        public byte[] emptyB;
         public int[] transpose;
 
         @Override
         public void map(AvroKey<GenericRecord> key, NullWritable value, Context context) throws IOException, InterruptedException {
 
+        	char[] res = SchemaUtils.initBitmask(jobDirs.length);
 
-            byte[] res = new byte[jobDirs.length];
             if (isDiffFile) {
-                ByteBuffer bb = (ByteBuffer) key.datum().get(SchemaUtils.DIFFBYTEMASK);
-                byte[] inputmask = bb.array();
+                char[] inputmask = ((String) key.datum().get(SchemaUtils.DIFFBYTEMASK)).toCharArray();
+                //byte[] inputmask = bb.array();
 
                 for (int i = 0; i < inputDirs.length; i++) {
                     res[transpose[i]] = inputmask[i];
@@ -83,7 +87,7 @@ public class MergeJob extends Configured implements Tool {
                 res[indexFile] = 1;
             }
 
-            context.write(key, new BytesWritable(res));
+            context.write(key, new Text(new String(res)));
         }
 
         @Override
@@ -100,22 +104,20 @@ public class MergeJob extends Configured implements Tool {
             isDiffFile = inputDirs.length != 0;
             indexFile = StringUtils.indexOfClosestElement(filename, jobDirs);
 
-            emptyB = new byte[jobDirs.length];
-
             transpose = computeTranspose(inputDirs, jobDirs);
 
         }
     }
 
-    public static class MergeReducer extends Reducer<AvroKey<GenericData.Record>, BytesWritable, AvroKey<GenericData.Record>, NullWritable> {
+    public static class MergeReducer extends Reducer<AvroKey<GenericData.Record>, Text, AvroKey<GenericData.Record>, NullWritable> {
 
         private int sizeOfBA;
 
         @Override
-        protected void reduce(AvroKey<GenericData.Record> record, Iterable<BytesWritable> sides, Context context) throws IOException, InterruptedException {
+        protected void reduce(AvroKey<GenericData.Record> record, Iterable<Text> sides, Context context) throws IOException, InterruptedException {
 
             // merge BytesArray
-            byte[] bytesMask = SchemaUtils.bytesBitmask(sides, sizeOfBA);
+            String bytesMask = SchemaUtils.bytesBitmask(sides, sizeOfBA);
 
             GenericData.Record datum = record.datum();
             datum.put(SchemaUtils.DIFFBYTEMASK, bytesMask);
@@ -180,12 +182,12 @@ public class MergeJob extends Configured implements Tool {
         AvroJob.setInputKeySchema(job, outSchema);
 
         AvroJob.setMapOutputKeySchema(job, outSchema);
-        job.setMapOutputValueClass(BytesWritable.class);
+        job.setMapOutputValueClass(Text.class);
 
 
         job.setReducerClass(MergeReducer.class);
         AvroJob.setOutputKeySchema(job, outSchema);
-        job.setOutputValueClass(BytesWritable.class);
+        job.setOutputValueClass(Text.class);
         job.setOutputFormatClass(AvroKeyOutputFormat.class);
 
 
