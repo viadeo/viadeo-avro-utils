@@ -5,7 +5,6 @@ import com.viadeo.avrocompact.CompactJob;
 import com.viadeo.avrodiff.DiffJob;
 import com.viadeo.avroextract.ExtractJob;
 import com.viadeo.avromerge.MergeJob;
-import com.viadeo.avrondiff.DiffNJob;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.util.Tool;
@@ -30,14 +29,12 @@ public class AvroUtilsJob extends Configured implements Tool {
             return ToolRunner.run(getConf(), new CompactJob(), remainingArgs);
         } else if (toolName.equals("diff")) {
             return ToolRunner.run(getConf(), new DiffJob(), remainingArgs);
-        } else if (toolName.equals("diffn")) {
-            return ToolRunner.run(getConf(), new DiffNJob(), remainingArgs);
         } else if (toolName.equals("extract")) {
             return ToolRunner.run(getConf(), new ExtractJob(), remainingArgs);
         } else if (toolName.equals("merge")) {
             return ToolRunner.run(getConf(), new MergeJob(), remainingArgs);
         } else {
-            System.err.println("Wront tool. Available: diff|diffn|extract|merge");
+            System.err.println("Wront tool. Available: diff|extract|merge");
             return -1;
         }
     }

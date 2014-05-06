@@ -11,8 +11,6 @@
     <name>viadeo</name>
   </organization>
   <properties>
-    <!-- Dependencies versions-->
-    <jdeb.version>0.11</jdeb.version>
     <debian.package>${project.artifactId}</debian.package>
     <deb.lib.directory>/usr/lib/${debian.package}</deb.lib.directory>
   </properties>
