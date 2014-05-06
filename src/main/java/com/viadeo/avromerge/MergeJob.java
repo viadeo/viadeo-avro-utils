@@ -76,7 +76,7 @@ public class MergeJob extends Configured implements Tool {
         	char[] res = SchemaUtils.initBitmask(jobDirs.length);
 
             if (isDiffFile) {
-                char[] inputmask = ((String) key.datum().get(SchemaUtils.DIFFBYTEMASK)).toCharArray();
+                char[] inputmask = ((String) key.datum().get(SchemaUtils.DIFFMASK)).toCharArray();
                 //byte[] inputmask = bb.array();
 
                 for (int i = 0; i < inputDirs.length; i++) {
@@ -120,7 +120,7 @@ public class MergeJob extends Configured implements Tool {
             String bytesMask = SchemaUtils.bytesBitmask(sides, sizeOfBA);
 
             GenericData.Record datum = record.datum();
-            datum.put(SchemaUtils.DIFFBYTEMASK, bytesMask);
+            datum.put(SchemaUtils.DIFFMASK, bytesMask);
             context.write(new AvroKey<GenericData.Record>(datum), NullWritable.get());
         }
 
@@ -150,7 +150,7 @@ public class MergeJob extends Configured implements Tool {
         Schema tempS = null;
         for (String dir : dirs) {
             tempS = SchemaUtils.getSchema(conf, new Path(dir));
-            if (null != tempS.getField(SchemaUtils.DIFFBYTEMASK)) {
+            if (null != tempS.getField(SchemaUtils.DIFFMASK)) {
                 String[] insideDirs = SchemaUtils.getDiffDirs(tempS);
                 deRefDir.addAll(Arrays.asList(insideDirs));
                 dirsConf.append(dir).append("|").append(StringUtils.mkString(insideDirs, ","));

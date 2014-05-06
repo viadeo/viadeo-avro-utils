@@ -32,7 +32,7 @@ public class ExtractJob extends Configured implements Tool {
 
         @Override
         public void map(AvroKey<GenericRecord> key, NullWritable value, Context context) throws IOException, InterruptedException {
-            char[] bytemask = ((String) key.datum().get(SchemaUtils.DIFFBYTEMASK)).toCharArray();
+            char[] bytemask = ((String) key.datum().get(SchemaUtils.DIFFMASK)).toCharArray();
 
             if (bytemask[diffindex] == SchemaUtils.ONE) {
                 context.write(key, NullWritable.get());
@@ -60,7 +60,7 @@ public class ExtractJob extends Configured implements Tool {
         job.getConfiguration().set(DIFFINDEX, indexValue);
 
 
-        Schema outSchema = SchemaUtils.removeField(schema, SchemaUtils.DIFFBYTEMASK);
+        Schema outSchema = SchemaUtils.removeField(schema, SchemaUtils.DIFFMASK);
         System.out.println(outSchema);
 
 

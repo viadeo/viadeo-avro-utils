@@ -22,7 +22,7 @@ import java.util.*;
 
 public class SchemaUtils {
 
-    public static final String DIFFBYTEMASK = "diffbytemask";
+    public static final String DIFFMASK = "diffmask";
 
     public static final String DIFFDIRSPROPNAME = "diffdirs";
 
@@ -76,7 +76,7 @@ public class SchemaUtils {
     }
 
     public static String[] getDiffDirs(Schema schema) {
-        return schema.getField(SchemaUtils.DIFFBYTEMASK).getProp(SchemaUtils.DIFFDIRSPROPNAME).split(",");
+        return schema.getField(SchemaUtils.DIFFMASK).getProp(SchemaUtils.DIFFDIRSPROPNAME).split(",");
     }
 
     public static Schema addByteMask(Schema schema) {
@@ -87,7 +87,7 @@ public class SchemaUtils {
 
     public static Schema addByteMask(Schema schema, String[] dirs) {
 
-        schema = removeField(schema, DIFFBYTEMASK);
+        schema = removeField(schema, DIFFMASK);
 
         try {
             // THANKS TO AVRO V.1.7.1 in CDH 4.1.2
@@ -104,7 +104,7 @@ public class SchemaUtils {
 
             }
 
-            final String fieldSchema = String.format("{\"name\":\"%s\", \"type\":\"string\",\"order\":\"ignore\",\"default\":\"\",\"%s\": \"%s\"}", DIFFBYTEMASK, DIFFDIRSPROPNAME, dirString);
+            final String fieldSchema = String.format("{\"name\":\"%s\", \"type\":\"string\",\"order\":\"ignore\",\"default\":\"\",\"%s\": \"%s\"}", DIFFMASK, DIFFDIRSPROPNAME, dirString);
 
             final JsonFactory jsonFactory = (new ObjectMapper()).getJsonFactory();
 

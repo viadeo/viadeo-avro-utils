@@ -151,7 +151,7 @@ public abstract class AvroUtilTest {
             GenericData.Record record = new GenericData.Record(SchemaUtils.addByteMask(getSchema(), dirs));
             record.put(KEY, k);
             record.put(VALUE, v);
-            record.put(SchemaUtils.DIFFBYTEMASK, mask);
+            record.put(SchemaUtils.DIFFMASK, mask);
             return record;
         }
 
@@ -159,7 +159,7 @@ public abstract class AvroUtilTest {
             GenericData.Record record = new GenericData.Record(SchemaUtils.addByteMask(getSchemaWithAddField(), dirs));
             record.put(KEY, k);
             record.put(VALUE, v);
-            record.put(SchemaUtils.DIFFBYTEMASK, mask);
+            record.put(SchemaUtils.DIFFMASK, mask);
             record.put("w", w);
             return record;
 
