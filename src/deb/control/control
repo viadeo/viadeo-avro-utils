@@ -1,0 +1,9 @@
+Package: [[debian.package]]
+Version: [[version]]
+Section: misc
+Priority: optional
+Architecture: all
+Depends: hadoop
+Maintainer: Jonathan Winandy<jonathan.winandy@gmail.com>
+Description: avro utility
+Distribution: [[debian.distribution]]

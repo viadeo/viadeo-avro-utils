@@ -2,14 +2,20 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>default</groupId>
-  <artifactId>avro-ndiff</artifactId>
+  <artifactId>avro-diff</artifactId>
   <packaging>jar</packaging>
   <description>avro-diff</description>
   <version>1.0</version>
   <name>avro-ndiff</name>
   <organization>
-    <name>default</name>
+    <name>viadeo</name>
   </organization>
+  <properties>
+    <!-- Dependencies versions-->
+    <jdeb.version>0.11</jdeb.version>
+    <debian.package>${project.artifactId}</debian.package>
+    <deb.lib.directory>/usr/lib/${debian.package}</deb.lib.directory>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>org.apache.avro</groupId>
@@ -89,6 +95,31 @@
           <source>1.6</source>
           <target>1.6</target>
         </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>jdeb</artifactId>
+        <groupId>org.vafer</groupId>
+        <version>1.0</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>jdeb</goal>
+            </goals>
+            <configuration>
+              <dataSet>
+                <data>
+                  <src>${project.build.directory}/${project.build.finalName}-job.jar</src>
+                  <type>file</type>
+                  <mapper>
+                    <type>perm</type>
+                    <prefix>/usr/share/lib</prefix>
+                  </mapper>
+                </data>
+              </dataSet>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
