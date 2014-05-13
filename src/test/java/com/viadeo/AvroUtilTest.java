@@ -37,17 +37,26 @@ public abstract class AvroUtilTest {
     }
 
 
-    private static void assertContainsImpl(String base, GenericData.Record record, boolean contains) throws Exception {
+    private static void assertContainsImpl(String base, GenericData.Record record, boolean contains, boolean checkMask) throws Exception {
         String path = base + "/part-r-00000.avro";
 
         DatumReader<GenericRecord> datumReader = new GenericDatumReader<GenericRecord>();
         DataFileReader<GenericRecord> dataFileReader = new DataFileReader<GenericRecord>(new File(path), datumReader);
 
-        String recordMask = (String)record.get(SchemaUtils.DIFFMASK);
+        String recordMask = "";
+
+        if(checkMask){
+        	recordMask = (String)record.get(SchemaUtils.DIFFMASK);
+        }
 
         while (dataFileReader.hasNext()) {
             GenericRecord user = dataFileReader.next();
-            String userMask = (user.get(SchemaUtils.DIFFMASK)).toString();
+
+            String userMask = "";
+
+            if(checkMask){
+            	userMask = (user.get(SchemaUtils.DIFFMASK)).toString();
+            }
 
             if (equals(user, record) && recordMask.equals(userMask)) {
                 if (contains ) {
@@ -63,12 +72,12 @@ public abstract class AvroUtilTest {
         }
     }
 
-    public static void assertContains(String base, GenericData.Record record) throws Exception {
-        assertContainsImpl(base, record, true);
+    public static void assertContains(String base, GenericData.Record record, boolean checkMask) throws Exception {
+        assertContainsImpl(base, record, true, checkMask);
     }
 
-    public static void assertNotContains(String base, GenericData.Record record) throws Exception {
-        assertContainsImpl(base, record, false);
+    public static void assertNotContains(String base, GenericData.Record record, boolean checkMask) throws Exception {
+        assertContainsImpl(base, record, false, checkMask);
     }
 
     public void create(String dirname, String filename, GenericData.Record[] records) throws Exception {

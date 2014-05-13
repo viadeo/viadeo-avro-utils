@@ -15,17 +15,17 @@ import static com.viadeo.AvroUtilTest.TestSchema.recordWithMask;
 import static com.viadeo.SchemaUtils.bmask;
 
 
-public class ExtracJobTest extends AvroUtilTest {
+public class ExtractJobTest extends AvroUtilTest {
 
 
     @Before
     public void setUp() throws Exception {
-        GenericData.Record[] records = {recordWithMask("3", 3, bmask(1, 1), new String[]{"a", "b"}),
+        GenericData.Record[] records = {
+        		recordWithMask("3", 3, bmask(1, 1), new String[]{"a", "b"}),
                 recordWithMask("4", 4, bmask(0, 1)),
                 recordWithMask("2", 2, bmask(1, 0))};
 
         create("in", "input.avro", records);
-
 
     }
 
@@ -46,8 +46,8 @@ public class ExtracJobTest extends AvroUtilTest {
         String base = outStr + "/";
 
 
-        assertContains(base, record("3", 3));
-        assertContains(base, record("2", 2));
-        assertNotContains(base, record("4", 4));
+        assertContains(base, record("3", 3), false);
+        assertContains(base, record("2", 2), false);
+        assertNotContains(base, record("4", 4), false);
     }
 }

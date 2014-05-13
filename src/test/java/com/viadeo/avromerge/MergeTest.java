@@ -89,11 +89,11 @@ public class MergeTest extends AvroUtilTest {
         String base = outStr + "/";
 
 
-        assertContains(base, TestSchema.recordWithMask("3", 3, bmask(1, 1, 0, 0)));
-        assertContains(base, TestSchema.recordWithMask("4", 4, bmask(0, 1, 1, 0)));
-        assertContains(base, TestSchema.recordWithMask("2", 2, bmask(1, 0, 1, 0)));
-        assertContains(base, TestSchema.recordWithMask("6", 6, bmask(0, 0, 0, 1)));
-        assertContains(base, TestSchema.recordWithMask("5", 5, bmask(0, 1, 1, 1)));
+        assertContains(base, TestSchema.recordWithMask("3", 3, bmask(1, 1, 0, 0)), true);
+        assertContains(base, TestSchema.recordWithMask("4", 4, bmask(0, 1, 1, 0)), true);
+        assertContains(base, TestSchema.recordWithMask("2", 2, bmask(1, 0, 1, 0)), true);
+        assertContains(base, TestSchema.recordWithMask("6", 6, bmask(0, 0, 0, 1)), true);
+        assertContains(base, TestSchema.recordWithMask("5", 5, bmask(0, 1, 1, 1)), true);
     }
 
     @Test
@@ -114,10 +114,10 @@ public class MergeTest extends AvroUtilTest {
 
         String base = outStr + "/";
 
-        assertContains(base, TestSchema.recordWithExtraFieldWithMask("2", 2, null, bmask(1, 0, 0, 0)));
-        assertContains(base, TestSchema.recordWithExtraFieldWithMask("2", 2, "B", bmask(0, 0, 0, 1)));
+        assertContains(base, TestSchema.recordWithExtraFieldWithMask("2", 2, null, bmask(1, 0, 0, 0)), true);
+        assertContains(base, TestSchema.recordWithExtraFieldWithMask("2", 2, "B", bmask(0, 0, 0, 1)), true);
         // the next one is tricky, a record from e (with an additionnal field, but at null), should match the same record in ma
-        assertContains(base, TestSchema.recordWithExtraFieldWithMask("3", 3, null, bmask(1, 1, 0, 1)));
+        assertContains(base, TestSchema.recordWithExtraFieldWithMask("3", 3, null, bmask(1, 1, 0, 1)), true);
     }
 
     @Test
@@ -133,8 +133,8 @@ public class MergeTest extends AvroUtilTest {
         //Thread.sleep(100000000000l);
         String base = outStr + "/";
 
-        assertContains(base, TestSchema.recordWithMask("5", 5, bmask(1, 1)));
-        assertContains(base, TestSchema.recordWithMask("6", 6, bmask(1, 1)));
+        assertContains(base, TestSchema.recordWithMask("5", 5, bmask(1, 1)), true);
+        assertContains(base, TestSchema.recordWithMask("6", 6, bmask(1, 1)), true);
     }
 
     @Test
