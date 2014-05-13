@@ -41,6 +41,7 @@ public class MergeTest extends AvroUtilTest {
         };
 
         create("d", "input.avro", records3);
+        create("dd", "input.avro", records3);
 
         GenericData.Record[] records4 = {
                 recordWithExtraField("2", 2, "B"),
@@ -82,7 +83,7 @@ public class MergeTest extends AvroUtilTest {
         MergeJob job = new MergeJob();
         Assert.assertTrue(job.internalRun(diffin.toString() + "," + diffin2.toString() + "," + diffin3.toString(), output, jobConf).waitForCompletion(true));
 
-//		Thread.sleep(100000000000l);
+		//Thread.sleep(100000000000l);
 
 
         String base = outStr + "/";
@@ -113,11 +114,33 @@ public class MergeTest extends AvroUtilTest {
 
         String base = outStr + "/";
 
-        assertContains(base, TestSchema.recordWithExtraFieldWithMask("2", 2, null, bmask(0, 1, 0, 0)));
+        assertContains(base, TestSchema.recordWithExtraFieldWithMask("2", 2, null, bmask(1, 0, 0, 0)));
         assertContains(base, TestSchema.recordWithExtraFieldWithMask("2", 2, "B", bmask(0, 0, 0, 1)));
         // the next one is tricky, a record from e (with an additionnal field, but at null), should match the same record in ma
         assertContains(base, TestSchema.recordWithExtraFieldWithMask("3", 3, null, bmask(1, 1, 0, 1)));
-
-
     }
+
+    @Test
+    public void testSameInput() throws Exception {
+    	String outStr = tmpFolder.getRoot().getPath() + "/out-generic-same";
+    	Path path1 = new Path(new File(tmpFolder.getRoot(), "d").toURI().toString());
+    	Path path2 = new Path(new File(tmpFolder.getRoot(), "dd").toURI().toString());
+    	Path output = new Path(outStr);
+
+        Configuration jobConf = new Configuration();
+        MergeJob job = new MergeJob();
+        Assert.assertTrue(job.internalRun(path1.toString() + "," + path2.toString(), output, jobConf).waitForCompletion(true));
+        //Thread.sleep(100000000000l);
+        String base = outStr + "/";
+
+        assertContains(base, TestSchema.recordWithMask("5", 5, bmask(1, 1)));
+        assertContains(base, TestSchema.recordWithMask("6", 6, bmask(1, 1)));
+    }
+
+    @Test
+    public void testString() throws Exception {
+    	char[] res = { '0', '1'};
+    	Assert.assertEquals("01", new String(res));
+    }
+
 }

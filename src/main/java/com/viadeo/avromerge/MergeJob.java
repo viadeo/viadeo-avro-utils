@@ -84,7 +84,7 @@ public class MergeJob extends Configured implements Tool {
                 }
 
             } else {
-                res[indexFile] = 1;
+                res[indexFile] = SchemaUtils.ONE;
             }
 
             context.write(key, new Text(new String(res)));

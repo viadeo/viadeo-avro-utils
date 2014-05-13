@@ -1,6 +1,12 @@
 package com.viadeo;
 
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import org.apache.avro.Schema;
 import org.apache.avro.file.DataFileReader;
 import org.apache.avro.file.DataFileWriter;
@@ -14,12 +20,6 @@ import org.apache.avro.io.Encoder;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
 
 public abstract class AvroUtilTest {
 
@@ -43,11 +43,14 @@ public abstract class AvroUtilTest {
         DatumReader<GenericRecord> datumReader = new GenericDatumReader<GenericRecord>();
         DataFileReader<GenericRecord> dataFileReader = new DataFileReader<GenericRecord>(new File(path), datumReader);
 
+        String recordMask = (String)record.get(SchemaUtils.DIFFMASK);
+
         while (dataFileReader.hasNext()) {
             GenericRecord user = dataFileReader.next();
+            String userMask = (user.get(SchemaUtils.DIFFMASK)).toString();
 
-            if (equals(user, record)) {
-                if (contains) {
+            if (equals(user, record) && recordMask.equals(userMask)) {
+                if (contains ) {
                     return;
                 } else {
                     Assert.assertTrue("should not be present", false);
@@ -56,7 +59,7 @@ public abstract class AvroUtilTest {
         }
 
         if (contains) {
-            Assert.assertTrue("not present", false);
+            Assert.assertTrue("not present: " + record, false);
         }
     }
 
