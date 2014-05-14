@@ -1,5 +1,6 @@
 package com.viadeo.avrodiff;
 
+import com.viadeo.AvroUtilsJob;
 import com.viadeo.SchemaUtils;
 import com.viadeo.StringUtils;
 import org.apache.avro.Schema;
@@ -14,6 +15,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
@@ -147,12 +149,15 @@ public class DiffJob extends Configured implements Tool {
         Path destPath = new Path(args[1]);
         Path outPath = new Path(args[2]);
 
-        Job job = internalRun(origPath, destPath, outPath, jobConf);
-        boolean b = job.waitForCompletion(true);
-        if (!b) {
-            throw new IOException("error with job!");
+
+        Path tempOut = AvroUtilsJob.tempDirectory();
+        FileSystem fileSystem = FileSystem.get(jobConf);
+        if(fileSystem.exists(outPath)) {
+            throw new Exception( "output Path already exist : " + outPath);
         }
 
-        return 0;
+        Job job = internalRun(origPath, destPath, tempOut, jobConf);
+
+        return AvroUtilsJob.runAndWatchJobThenMv(job, tempOut, outPath);
     }
 }

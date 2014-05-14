@@ -1,5 +1,6 @@
 package com.viadeo.avrocompact;
 
+import com.viadeo.AvroUtilsJob;
 import com.viadeo.SchemaUtils;
 import org.apache.avro.Schema;
 import org.apache.avro.mapreduce.AvroJob;
@@ -7,6 +8,7 @@ import org.apache.avro.mapreduce.AvroKeyInputFormat;
 import org.apache.avro.mapreduce.AvroKeyOutputFormat;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Job;
@@ -67,12 +69,15 @@ public class CompactJob extends Configured implements Tool {
         Path origPath = new Path(args[0]);
         Path outPath = new Path(args[1]);
 
-        Job job = internalRun(origPath, outPath, jobConf);
-        boolean b = job.waitForCompletion(true);
-        if (!b) {
-            throw new IOException("error with job!");
+        Path tempOut = AvroUtilsJob.tempDirectory();
+        FileSystem fileSystem = FileSystem.get(jobConf);
+        if(fileSystem.exists(outPath)) {
+            throw new Exception( "output Path already exist : " + outPath);
         }
 
-        return 0;
+
+        Job job = internalRun(origPath, tempOut , jobConf);
+
+        return AvroUtilsJob.runAndWatchJobThenMv(job, tempOut, outPath);
     }
 }

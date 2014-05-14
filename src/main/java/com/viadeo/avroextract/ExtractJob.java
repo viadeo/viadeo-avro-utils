@@ -1,5 +1,6 @@
 package com.viadeo.avroextract;
 
+import com.viadeo.AvroUtilsJob;
 import com.viadeo.SchemaUtils;
 import com.viadeo.StringUtils;
 import org.apache.avro.Schema;
@@ -10,6 +11,7 @@ import org.apache.avro.mapreduce.AvroKeyInputFormat;
 import org.apache.avro.mapreduce.AvroKeyOutputFormat;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Job;
@@ -107,13 +109,17 @@ public class ExtractJob extends Configured implements Tool {
         String origDir = args[1];
         Path outPath = new Path(args[2]);
 
-        Job job = internalRun(inputDir, origDir, outPath, jobConf);
-        boolean b = job.waitForCompletion(true);
-        if (!b) {
-            throw new IOException("error with job!");
+        Path tempOut = AvroUtilsJob.tempDirectory();
+        FileSystem fileSystem = FileSystem.get(jobConf);
+        if(fileSystem.exists(outPath)) {
+            throw new Exception( "output Path already exist : " + outPath);
         }
 
-        return 0;
+
+
+        Job job = internalRun(inputDir, origDir, tempOut, jobConf);
+
+        return AvroUtilsJob.runAndWatchJobThenMv(job, tempOut, outPath);
 
     }
 }

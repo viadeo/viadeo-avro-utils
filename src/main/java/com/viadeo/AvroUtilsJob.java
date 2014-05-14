@@ -7,10 +7,15 @@ import com.viadeo.avroextract.ExtractJob;
 import com.viadeo.avromerge.MergeJob;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.UUID;
 
 public class AvroUtilsJob extends Configured implements Tool {
 
@@ -37,6 +42,39 @@ public class AvroUtilsJob extends Configured implements Tool {
             System.err.println("Wrong tool. Available: diff|extract|merge");
             return -1;
         }
+    }
+
+    public static int runAndWatchJobThenMv(final Job job, Path tmp, Path out) throws Exception {
+        FileSystem fileSystem = FileSystem.get(job.getConfiguration());
+
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                try {
+                    job.killJob();
+                } catch (Exception e) {
+                }
+            }
+        });
+
+        boolean b = job.waitForCompletion(true);
+
+        if (b) {
+            System.out.println("Moving from tmp " + tmp + " to " + out);
+            fileSystem.mkdirs(out);
+            fileSystem.rename(tmp, out);
+        } else {
+            throw new IOException("error with job!");
+        }
+
+        return 0;
+    }
+
+
+    public static Path tempDirectory() {
+        UUID uuid = UUID.randomUUID();
+
+        return new Path("/tmp/uuid=" + uuid.toString());
     }
 
 
