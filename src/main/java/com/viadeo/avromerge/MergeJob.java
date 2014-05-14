@@ -181,7 +181,7 @@ public class MergeJob extends Configured implements Tool {
         job.setInputFormatClass(AvroKeyInputFormat.class);
         AvroJob.setInputKeySchema(job, outSchema);
 
-        AvroJob.setMapOutputKeySchema(job, outSchema);
+        AvroJob.setMapOutputKeySchema(job, SchemaUtils.ignoreFieldOrder(outSchema, SchemaUtils.DIFFMASK));
         job.setMapOutputValueClass(Text.class);
 
 

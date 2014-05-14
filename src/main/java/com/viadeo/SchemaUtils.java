@@ -29,20 +29,6 @@ public class SchemaUtils {
     public static final char ZERO = '0';
     public static final char ONE = '1';
 
-    public static Schema removeField(Schema schema, String fieldname) {
-        Schema outSchema;
-        outSchema = Schema.createRecord(schema.getName(), schema.getDoc(), schema.getNamespace(), schema.isError());
-
-        List<Schema.Field> fields = new ArrayList<Schema.Field>();
-        for (Schema.Field f : schema.getFields()) {
-            if (!f.name().equals(fieldname)) {
-                fields.add(new Schema.Field(f.name(), f.schema(), f.doc(), f.defaultValue()));
-            }
-        }
-        outSchema.setFields(fields);
-        return outSchema;
-    }
-
 
     public static Schema getConfSchema(Configuration conf) throws Exception {
         String schemaPath = conf.get("viadeo.avro.schema");
@@ -79,10 +65,40 @@ public class SchemaUtils {
         return schema.getField(SchemaUtils.DIFFMASK).getProp(SchemaUtils.DIFFDIRSPROPNAME).split(",");
     }
 
+
+    public static Schema removeField(Schema schema, String fieldname) {
+        Schema outSchema;
+        outSchema = Schema.createRecord(schema.getName(), schema.getDoc(), schema.getNamespace(), schema.isError());
+
+        List<Schema.Field> fields = new ArrayList<Schema.Field>();
+        for (Schema.Field f : schema.getFields()) {
+            if (!f.name().equals(fieldname)) {
+                fields.add(new Schema.Field(f.name(), f.schema(), f.doc(), f.defaultValue()));
+            }
+        }
+        outSchema.setFields(fields);
+        return outSchema;
+    }
+
+
+    public static Schema ignoreFieldOrder(Schema schema, String fieldname) {
+        Schema outSchema;
+        outSchema = Schema.createRecord(schema.getName(), schema.getDoc(), schema.getNamespace(), schema.isError());
+
+        List<Schema.Field> fields = new ArrayList<Schema.Field>();
+        for (Schema.Field f : schema.getFields()) {
+            if (!f.name().equals(fieldname)) {
+                fields.add(new Schema.Field(f.name(), f.schema(), f.doc(), f.defaultValue(), f.order()));
+            } else {
+                fields.add(new Schema.Field(f.name(), f.schema(), f.doc(), f.defaultValue(), Schema.Field.Order.IGNORE));
+            }
+        }
+        outSchema.setFields(fields);
+        return outSchema;
+    }
+
     public static Schema addByteMask(Schema schema) {
-
         return addByteMask(schema, new String[]{});
-
     }
 
     public static Schema addByteMask(Schema schema, String[] dirs) {
@@ -104,7 +120,7 @@ public class SchemaUtils {
 
             }
 
-            final String fieldSchema = String.format("{\"name\":\"%s\", \"type\":\"string\",\"order\":\"ignore\",\"default\":\"\",\"%s\": \"%s\"}", DIFFMASK, DIFFDIRSPROPNAME, dirString);
+            final String fieldSchema = String.format("{\"name\":\"%s\", \"type\":\"string\",\"default\":\"\",\"%s\": \"%s\"}", DIFFMASK, DIFFDIRSPROPNAME, dirString);
 
             final JsonFactory jsonFactory = (new ObjectMapper()).getJsonFactory();
 
@@ -130,9 +146,9 @@ public class SchemaUtils {
             char[] oldBitmask = t.toString().toCharArray();
 
             for (int i = 0; i < sizeOfBA; i++) {
-            	if(oldBitmask[i] == ONE){
-            		bts[i] = ONE;
-            	}
+                if (oldBitmask[i] == ONE) {
+                    bts[i] = ONE;
+                }
             }
         }
 
@@ -143,9 +159,9 @@ public class SchemaUtils {
     public static String bmask(int... b) {
         char[] res = initBitmask(b.length);
         for (int i = 0; i < b.length; i++) {
-        	if(b[i] == 1){
-        		res[i] = ONE;
-        	}
+            if (b[i] == 1) {
+                res[i] = ONE;
+            }
         }
         return new String(res);
     }
@@ -154,7 +170,7 @@ public class SchemaUtils {
         return b;
     }
 
-    public static char[] initBitmask(int size){
+    public static char[] initBitmask(int size) {
         char[] mask = new char[size];
         Arrays.fill(mask, SchemaUtils.ZERO);
         return mask;

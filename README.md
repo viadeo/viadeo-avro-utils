@@ -8,7 +8,6 @@ viadeo-avro-utils is a set of mapreduce jobs to perform Data management tasks on
    that are : only in the first file, in both files, only in the second file.
   - Merge : a record based merge job, take N files and ouput a single one, representing the input with a mask.
   - Extract : extract a source file from a merge file.
-  
 
 Build
 =======
@@ -23,6 +22,9 @@ or if you don't have maven :
 
 
 It builds in .... 
+=======
+
+It build in ....
 
 
 Usage
@@ -30,6 +32,4 @@ Usage
 
 Compact
 ---------
-
-
 

@@ -46,8 +46,8 @@ public class ExtractJobTest extends AvroUtilTest {
         String base = outStr + "/";
 
 
-        assertContains(base, record("3", 3), false);
-        assertContains(base, record("2", 2), false);
-        assertNotContains(base, record("4", 4), false);
+        assertContains(base, record("3", 3));
+        assertContains(base, record("2", 2));
+        assertNotContains(base, record("4", 4));
     }
 }

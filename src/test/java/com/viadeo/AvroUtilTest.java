@@ -28,37 +28,30 @@ public abstract class AvroUtilTest {
     public TemporaryFolder tmpFolder = new TemporaryFolder();
 
 
-    private static boolean equals(GenericRecord r1, GenericRecord r2) {
-        return 0 == compare(r1, r2);
+    private static boolean equals(GenericRecord r1, GenericRecord r2, Schema schema) {
+        return 0 == compare(r1, r2, schema);
     }
 
-    private static int compare(GenericRecord r1, GenericRecord r2) {
-        return GenericData.get().compare(r1, r2, TestSchema.getSchema());
+    private static int compare(GenericRecord r1, GenericRecord r2, Schema schema) {
+        return GenericData.get().compare(r1, r2, schema);
     }
 
 
-    private static void assertContainsImpl(String base, GenericData.Record record, boolean contains, boolean checkMask) throws Exception {
+    private static void assertContainsImpl(String base, GenericData.Record record, boolean contains) throws Exception {
         String path = base + "/part-r-00000.avro";
 
-        DatumReader<GenericRecord> datumReader = new GenericDatumReader<GenericRecord>();
+        Schema recordSchema = record.getSchema();
+        DatumReader<GenericRecord> datumReader = new GenericDatumReader<GenericRecord>(null, recordSchema);
         DataFileReader<GenericRecord> dataFileReader = new DataFileReader<GenericRecord>(new File(path), datumReader);
 
-        String recordMask = "";
 
-        if(checkMask){
-        	recordMask = (String)record.get(SchemaUtils.DIFFMASK);
-        }
+
+
 
         while (dataFileReader.hasNext()) {
             GenericRecord user = dataFileReader.next();
 
-            String userMask = "";
-
-            if(checkMask){
-            	userMask = (user.get(SchemaUtils.DIFFMASK)).toString();
-            }
-
-            if (equals(user, record) && recordMask.equals(userMask)) {
+            if (equals(user, record, recordSchema)) {
                 if (contains ) {
                     return;
                 } else {
@@ -72,12 +65,12 @@ public abstract class AvroUtilTest {
         }
     }
 
-    public static void assertContains(String base, GenericData.Record record, boolean checkMask) throws Exception {
-        assertContainsImpl(base, record, true, checkMask);
+    public static void assertContains(String base, GenericData.Record record) throws Exception {
+        assertContainsImpl(base, record, true);
     }
 
-    public static void assertNotContains(String base, GenericData.Record record, boolean checkMask) throws Exception {
-        assertContainsImpl(base, record, false, checkMask);
+    public static void assertNotContains(String base, GenericData.Record record) throws Exception {
+        assertContainsImpl(base, record, false);
     }
 
     public void create(String dirname, String filename, GenericData.Record[] records) throws Exception {
