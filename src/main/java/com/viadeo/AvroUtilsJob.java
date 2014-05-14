@@ -62,6 +62,7 @@ public class AvroUtilsJob extends Configured implements Tool {
         if (b) {
             System.out.println("Moving from tmp " + tmp + " to " + out);
             fileSystem.mkdirs(out);
+            fileSystem.delete(out,false);
             fileSystem.rename(tmp, out);
         } else {
             throw new IOException("error with job!");
