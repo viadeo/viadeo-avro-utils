@@ -30,6 +30,14 @@ public class SchemaUtils {
     public static final char ONE = '1';
 
 
+    public static Schema getSingleCollSchema() {
+
+        Schema union = Schema.createUnion(Arrays.asList(Schema.create(Schema.Type.NULL), Schema.create(Schema.Type.STRING)));
+        Schema record = Schema.createRecord(Arrays.asList(new Schema.Field(DIFFMASK, union, "", NullNode.getInstance())));
+
+        return record;
+    }
+
     public static Schema getConfSchema(Configuration conf) throws Exception {
         String schemaPath = conf.get("viadeo.avro.schema");
         if (schemaPath == null) {

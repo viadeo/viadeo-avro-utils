@@ -3,6 +3,7 @@ package com.viadeo;
 
 import com.viadeo.avrocompact.CompactJob;
 import com.viadeo.avrodiff.DiffJob;
+import com.viadeo.avrodiffstat.MutationStatJob;
 import com.viadeo.avroextract.ExtractJob;
 import com.viadeo.avromerge.MergeJob;
 import org.apache.hadoop.conf.Configuration;
@@ -38,8 +39,10 @@ public class AvroUtilsJob extends Configured implements Tool {
             return ToolRunner.run(getConf(), new ExtractJob(), remainingArgs);
         } else if (toolName.equals("merge")) {
             return ToolRunner.run(getConf(), new MergeJob(), remainingArgs);
+        } else if (toolName.equals("mutation")) {
+            return ToolRunner.run(getConf(), new MutationStatJob(), remainingArgs);
         } else {
-            System.err.println("Wrong tool. Available: diff|extract|merge");
+            System.err.println("Wrong tool. Available: diff|extract|merge|mutation");
             return -1;
         }
     }
@@ -87,8 +90,12 @@ public class AvroUtilsJob extends Configured implements Tool {
         conf.setInt("mapred.reduce.tasks", 30);
         conf.set("mapred.child.java.opts", "-Xmx512m");
 
-        int res = ToolRunner.run(conf, new AvroUtilsJob(), args);
-        System.exit(res);
+        int res = 1000;
+        try {
+            res = ToolRunner.run(conf, new AvroUtilsJob(), args);
+        } finally {
+            System.exit(res);
+        }
     }
 
 }
