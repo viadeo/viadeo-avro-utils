@@ -1,6 +1,8 @@
 package com.viadeo;
 
 
+import java.util.List;
+
 public class StringUtils {
 
     public static String mkString(String[] strs, String sep, String format) {
@@ -54,5 +56,9 @@ public class StringUtils {
             }
         }
         return indexleven;
+    }
+
+    public static String mkString(List<String> sb, String sep) {
+        return mkString(sb.toArray(new String[0]), sep);
     }
 }

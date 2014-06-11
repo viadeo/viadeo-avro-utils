@@ -91,10 +91,13 @@ public class MutationStatJob extends Configured implements Tool {
                 List<String> mutations = new ArrayList<String>();
 
                 for(String f:fields) {
-                    if(!from.get(f).equals(to.get(f))) {
+
+                    if(!equals(from.get(f), to.get(f))) {
                         mutations.add(f);
                     }
                 }
+
+                Collections.sort(mutations);
 
                 GenericRecord genericRecord = new GenericData.Record(interschema);
 
@@ -106,6 +109,14 @@ public class MutationStatJob extends Configured implements Tool {
 
                 context.write(new AvroKey<GenericRecord>(genericRecord), NullWritable.get());
 
+            }
+        }
+
+        private static boolean equals(Object a, Object b) {
+            if(a == null) {
+                return b == null;
+            } else {
+                return a.equals(b);
             }
         }
 

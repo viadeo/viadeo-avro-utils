@@ -109,6 +109,26 @@ public class SchemaUtils {
         return addByteMask(schema, new String[]{});
     }
 
+    public static Schema addField(Schema schema, String field) {
+        try {
+            final JsonFactory jsonFactory = (new ObjectMapper()).getJsonFactory();
+
+            final ObjectNode jsonSchema = (ObjectNode) jsonFactory.createJsonParser(schema.toString()).readValueAsTree();
+
+            final ArrayNode fields = (ArrayNode) jsonSchema.get("fields");
+
+            fields.add(jsonFactory.createJsonParser( field.toString()).readValueAsTree());
+
+            jsonSchema.put("fields", fields);
+
+            return Schema.parse(jsonSchema.toString());
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+
+        }
+    }
+
     public static Schema addByteMask(Schema schema, String[] dirs) {
 
         schema = removeField(schema, DIFFMASK);
