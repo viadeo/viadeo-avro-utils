@@ -6,6 +6,7 @@ import com.viadeo.avrodiff.DiffJob;
 import com.viadeo.avrodiffstat.MutationStatJob;
 import com.viadeo.avroextract.ExtractJob;
 import com.viadeo.avromerge.MergeJob;
+import com.viadeo.avromergetodate.MergeToDateJob;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
@@ -41,6 +42,8 @@ public class AvroUtilsJob extends Configured implements Tool {
             return ToolRunner.run(getConf(), new MergeJob(), remainingArgs);
         } else if (toolName.equals("mutation")) {
             return ToolRunner.run(getConf(), new MutationStatJob(), remainingArgs);
+        } else if (toolName.equals("todate")) {
+            return ToolRunner.run(getConf(), new MergeToDateJob(), remainingArgs);
         } else {
             System.err.println("Wrong tool. Available: diff|extract|merge|mutation");
             return -1;
