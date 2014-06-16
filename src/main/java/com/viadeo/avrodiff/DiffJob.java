@@ -108,7 +108,8 @@ public class DiffJob extends Configured implements Tool {
         job.setJarByClass(DiffJob.class);
         job.setJobName("diff");
 
-        Schema schema = SchemaUtils.getSchema(conf, destInput);
+        Schema schema = SchemaUtils.getConfSchema(conf);
+        if(schema == null) schema = SchemaUtils.getSchema(conf, destInput);
 
 
         FileInputFormat.setInputPaths(job, origInput, destInput);
